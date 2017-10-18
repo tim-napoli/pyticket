@@ -7,6 +7,12 @@ def get_root_path(directory = "."):
 def get_home_path():
     return os.path.expanduser("~/.pyticket")
 
+def get_opened_tickets_path(directory = "."):
+    return "{}/opened".format(get_root_path(directory))
+
+def get_closed_tickets_path(directory = "."):
+    return "{}/closed".format(get_root_path(directory))
+
 class configuration:
     ALLOWED_VALUES = ["editor"]
 
