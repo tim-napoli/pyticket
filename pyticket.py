@@ -6,7 +6,7 @@ import sys
 from pyticket.command import command, argument, print_usage, execute_argv
 from pyticket.commands.init import init
 from pyticket.commands.configure import configure
-from pyticket.commands.tickets import create_ticket
+from pyticket.commands.tickets import create_ticket, edit_ticket
 
 COMMANDS = [
     command(
@@ -23,6 +23,11 @@ COMMANDS = [
         "create-ticket",
         "Create a new ticket",
         create_ticket
+    ),
+    command(
+        "edit-ticket",
+        "Edit an existing ticket",
+        edit_ticket
     )
 ]
 
