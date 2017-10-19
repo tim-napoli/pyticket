@@ -13,6 +13,9 @@ def get_opened_tickets_path(directory = "."):
 def get_closed_tickets_path(directory = "."):
     return "{}/closed".format(get_root_path(directory))
 
+def get_templates_path(directory = "."):
+    return "{}/templates".format(get_root_path(directory))
+
 class configuration:
     ALLOWED_VALUES = ["editor"]
 
