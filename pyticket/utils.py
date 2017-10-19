@@ -1,6 +1,8 @@
 import json
 import os.path
 
+from string import Template
+
 def get_root_path(directory = "."):
     return "{}/.pyticket".format(directory)
 
@@ -43,4 +45,12 @@ class configuration:
         with open(path, "r") as f:
             content = json.loads(f.read())
             return configuration(content)
+
+def expand_template(template_name, values):
+    path = "{}/{}".format(get_templates_path(), template_name)
+    if not os.path.isfile(path):
+        raise RuntimeError("Template '{}' doesn't exist".format(template_name))
+    with open(path, 'r') as f:
+        content = Template(f.read())
+        return content.safe_substitute(**values)
 
