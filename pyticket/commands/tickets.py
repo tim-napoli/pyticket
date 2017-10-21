@@ -57,6 +57,8 @@ def show_ticket(options, ticket_name : "The ticket name"):
 
 def list_tickets_command(options):
     def show_list_tickets(directory, tickets, tags):
+        indentations = {}
+        tickets.sort()
         for ticket in tickets:
             ticket_content = read_ticket(directory, ticket)
             show_ticket = True
@@ -64,8 +66,17 @@ def list_tickets_command(options):
             if tags:
                 inter = list(set(tags).intersection(ticket_tags))
                 show_ticket = len(inter) == len(tags)
+
+            parent = get_ticket_parent(ticket)
+            if parent and parent in indentations:
+                indentations[ticket] = indentations[parent] + 2
+            else:
+                indentations[ticket] = 0
+
             if show_ticket:
-                print("    {} ({})".format(ticket, ", ".join(ticket_tags)))
+                print("    {}{} ({})".format(
+                    " " * indentations[ticket] ,ticket, ", ".join(ticket_tags)
+                ))
 
     tickets_from = ["opened", "closed"]
     if "opened" in options:
