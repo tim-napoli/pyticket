@@ -54,7 +54,14 @@ def expand_template(template_name, values):
         content = Template(f.read())
         return content.safe_substitute(**values)
 
-def read_opened_ticket(ticket_name):
-    path = "{}/{}".format(get_opened_tickets_path(), ticket_name)
+def read_ticket(directory, ticket_name):
+    path = "{}/{}/{}".format(get_root_path(), directory, ticket_name)
     with open(path, "r") as f:
         return f.read()
+
+def read_opened_ticket(ticket_name):
+    return read_ticket("opened", ticket_name)
+
+def read_closed_ticket(ticket_name):
+    return read_ticket("closed", ticket_name)
+
