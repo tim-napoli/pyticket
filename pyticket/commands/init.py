@@ -29,7 +29,7 @@ DEFAULT_FEATURE_TEMPLATE = (
 tags: feature
 """)
 
-def init(argv, directory : "The pyticket repository directory"):
+def init(options, directory : "The pyticket repository directory"):
     if os.path.isdir(get_root_path(directory)):
         raise RuntimeError(
             "There already exists a pyticket repository in '{}'".format(

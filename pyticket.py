@@ -3,7 +3,9 @@
 PyTicket main program.
 """
 import sys
-from pyticket.command import command, argument, print_usage, execute_argv
+from pyticket.command import (
+    command, argument, print_usage, execute_argv, option
+)
 from pyticket.commands.init import init
 from pyticket.commands.configure import configure
 from pyticket.commands.tickets import create_ticket, edit_ticket, show_ticket

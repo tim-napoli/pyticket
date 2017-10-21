@@ -9,7 +9,7 @@ from pyticket.utils import (
     read_opened_ticket
 )
 
-def create_ticket(argv,
+def create_ticket(options,
                   ticket_name : "The ticket name",
                   template : "The template to use" = None):
     ticket_path = "{}/{}".format(get_opened_tickets_path(), ticket_name)
@@ -27,7 +27,7 @@ def edit_ticket(argv, ticket_name : "The ticket name"):
     config = configuration.load(get_home_path())
     subprocess.call([config.values["editor"], ticket_path])
 
-def show_ticket(argv, ticket_name : "The ticket name"):
+def show_ticket(options, ticket_name : "The ticket name"):
     class parser_args:
         tab_spaces = 4
 

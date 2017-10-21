@@ -1,6 +1,6 @@
 from pyticket.utils import configuration, get_home_path
 
-def configure(argv,
+def configure(options,
               what : "Which configuration key to configure",
               value : "Key value"):
     config = configuration.load(get_home_path())
