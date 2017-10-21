@@ -33,7 +33,8 @@ def show_ticket(options, ticket_name : "The ticket name"):
     class parser_args:
         tab_spaces = 4
 
-    ticket_content = read_opened_ticket(ticket_name)
+    directory = find_ticket_directory(ticket_name)
+    ticket_content = read_ticket(directory, ticket_name)
 
     parser = build_parser(parser_args)
     config = load_config()
