@@ -10,7 +10,7 @@ from pyticket.commands.init import init
 from pyticket.commands.configure import configure
 from pyticket.commands.tickets import (
     create_ticket, edit_ticket, show_ticket, list_tickets_command,
-    close_ticket, reopen_ticket, delete_ticket
+    close_ticket, reopen_ticket, delete_ticket, rename_ticket
 )
 
 COMMANDS = [
@@ -39,6 +39,11 @@ COMMANDS = [
         "Delete an existing ticket",
         delete_ticket,
         [ option("force", "don't ask for confirmation", False) ]
+    ),
+    command(
+        "rename",
+        "Rename a ticket",
+        rename_ticket
     ),
     command(
         "close",

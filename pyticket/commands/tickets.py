@@ -94,3 +94,10 @@ def delete_ticket(options, name : "The ticket name"):
             os.remove("{}/{}/{}".format(get_root_path(), directory, name))
     else:
         os.remove("{}/{}/{}".format(get_root_path(), directory, name))
+
+def rename_ticket(options, name : "The ticket name",
+                  new_name : "The new ticket name"):
+    directory = find_ticket_directory(name)
+    src_path = "{}/{}/{}".format(get_root_path(), directory, name)
+    dst_path = "{}/{}/{}".format(get_root_path(), directory, new_name)
+    shutil.move(src_path, dst_path)
