@@ -12,6 +12,7 @@ from pyticket.commands.tickets import (
     create_ticket, edit_ticket, show_ticket, list_tickets_command,
     close_ticket, reopen_ticket, delete_ticket, rename_ticket
 )
+from pyticket.commands.tags import add_tag
 
 COMMANDS = [
     command(
@@ -72,6 +73,11 @@ COMMANDS = [
                    " Listed tickets must have every given tags."),
                  True)
         ]
+    ),
+    command(
+        "add-tag",
+        "Add a tag to the given ticket",
+        add_tag
     )
 ]
 

@@ -126,3 +126,9 @@ def find_tickets_childs_deep(directory, name):
 
 def is_closed_ticket(name):
     return name in list_tickets("closed")
+
+def write_ticket(directory, name, new_content):
+    path = "{}/{}/{}".format(get_root_path(), directory, name)
+    with open(path, "w+") as f:
+        f.write(new_content)
+
