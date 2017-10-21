@@ -27,7 +27,8 @@ COMMANDS = [
     command(
         "create",
         "Create a new ticket",
-        create_ticket
+        create_ticket,
+        [ option("no-edit", "don't edit the created ticket", False) ]
     ),
     command(
         "edit",

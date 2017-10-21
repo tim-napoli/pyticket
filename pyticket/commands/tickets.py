@@ -27,8 +27,13 @@ def create_ticket(options,
         content = expand_template(template, {"ticket": ticket_name})
         with open(ticket_path, "w+") as f:
             f.write(content)
-    config = configuration.load(get_home_path())
-    subprocess.call([config.values["editor"], ticket_path])
+
+    if "no-edit" in options:
+        if not template:
+            open(ticket_path, "w+").close()
+    else:
+        config = configuration.load(get_home_path())
+        subprocess.call([config.values["editor"], ticket_path])
 
 def edit_ticket(argv, ticket_name : "The ticket name"):
     directory = find_ticket_directory(ticket_name)
