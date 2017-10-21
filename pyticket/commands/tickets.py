@@ -52,12 +52,12 @@ def list_tickets_command(options):
         for ticket in tickets:
             ticket_content = read_ticket(directory, ticket)
             show_ticket = True
+            ticket_tags = get_ticket_tags(ticket_content)
             if tags:
-                ticket_tags = get_ticket_tags(ticket_content)
                 inter = list(set(tags).intersection(ticket_tags))
                 show_ticket = len(inter) == len(tags)
             if show_ticket:
-                print("    {}".format(ticket))
+                print("    {} ({})".format(ticket, ", ".join(ticket_tags)))
 
     tickets_from = ["opened", "closed"]
     if "opened" in options:
