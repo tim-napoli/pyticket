@@ -1,4 +1,5 @@
 import sys
+import shutil
 import subprocess
 import os.path
 
@@ -6,7 +7,8 @@ from vmd import build_render, create_display_writer, load_config, build_parser
 
 from pyticket.utils import (
     configuration, get_home_path, get_opened_tickets_path, expand_template,
-    read_opened_ticket, read_ticket, list_tickets, get_ticket_tags
+    read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
+    get_closed_tickets_path
 )
 
 def create_ticket(options,
@@ -68,3 +70,14 @@ def list_tickets_command(options):
     for directory in tickets_from:
         print(directory + ":")
         show_list_tickets(directory, list_tickets(directory), tags)
+
+def close_ticket(options, name : "The ticket name"):
+    open_path = get_opened_tickets_path() + "/" + name
+    close_path = get_closed_tickets_path() + "/" + name
+    shutil.move(open_path, close_path)
+
+def reopen_ticket(options, name : "The ticket name"):
+    open_path = get_opened_tickets_path() + "/" + name
+    close_path = get_closed_tickets_path() + "/" + name
+    shutil.move(close_path, open_path)
+

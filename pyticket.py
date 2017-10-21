@@ -8,7 +8,10 @@ from pyticket.command import (
 )
 from pyticket.commands.init import init
 from pyticket.commands.configure import configure
-from pyticket.commands.tickets import create_ticket, edit_ticket, show_ticket
+from pyticket.commands.tickets import (
+    create_ticket, edit_ticket, show_ticket, list_tickets_command,
+    close_ticket, reopen_ticket
+)
 
 COMMANDS = [
     command(
@@ -30,6 +33,16 @@ COMMANDS = [
         "edit",
         "Edit an existing ticket",
         edit_ticket
+    ),
+    command(
+        "close",
+        "Close an opened ticket",
+        close_ticket
+    ),
+    command(
+        "reopen",
+        "Reopen a closed ticket",
+        reopen_ticket
     ),
     command(
         "show",
