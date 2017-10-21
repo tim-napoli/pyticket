@@ -131,6 +131,13 @@ def delete_ticket(options, name : "The ticket name"):
 
 def rename_ticket(options, name : "The ticket name",
                   new_name : "The new ticket name"):
+    childs = (  find_tickets_childs("opened", name)
+              + find_tickets_childs("closed", name))
+    for child in childs:
+        child_split = child.split(".")
+        child_new_name = new_name + "." + child_split[-1]
+        rename_ticket(options, child, child_new_name)
+
     directory = find_ticket_directory(name)
     src_path = "{}/{}/{}".format(get_root_path(), directory, name)
     dst_path = "{}/{}/{}".format(get_root_path(), directory, new_name)
