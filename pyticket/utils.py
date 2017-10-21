@@ -80,3 +80,11 @@ def get_ticket_tags(ticket_content):
         return tag_line.split()[1:]
     return []
 
+def find_ticket_directory(name):
+    opened_tickets = list_tickets("opened")
+    if name in opened_tickets:
+        return "opened"
+    closed_tickets = list_tickets("closed")
+    if name in closed_tickets:
+        return "closed"
+    raise Exception("there is no ticket '{}'".format(name))

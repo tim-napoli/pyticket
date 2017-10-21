@@ -8,7 +8,7 @@ from vmd import build_render, create_display_writer, load_config, build_parser
 from pyticket.utils import (
     configuration, get_home_path, get_opened_tickets_path, expand_template,
     read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
-    get_closed_tickets_path
+    get_closed_tickets_path, find_ticket_directory, get_root_path
 )
 
 def create_ticket(options,
@@ -81,3 +81,14 @@ def reopen_ticket(options, name : "The ticket name"):
     close_path = get_closed_tickets_path() + "/" + name
     shutil.move(close_path, open_path)
 
+def delete_ticket(options, name : "The ticket name"):
+    force = "force" in options
+    directory = find_ticket_directory(name)
+    if not force:
+        answer = input(
+            "Are you sure you want to supress '{}' ? [Y/n] ".format(name)
+        )
+        if answer == "Y" or answer == "y" or answer == "":
+            os.remove("{}/{}/{}".format(get_root_path(), directory, name))
+    else:
+        os.remove("{}/{}/{}".format(get_root_path(), directory, name))
