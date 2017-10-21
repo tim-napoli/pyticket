@@ -22,19 +22,31 @@ COMMANDS = [
         configure
     ),
     command(
-        "create-ticket",
+        "create",
         "Create a new ticket",
         create_ticket
     ),
     command(
-        "edit-ticket",
+        "edit",
         "Edit an existing ticket",
         edit_ticket
     ),
     command(
-        "show-ticket",
+        "show",
         "Show an existing ticket",
         show_ticket
+    ),
+    command(
+        "list",
+        "List tickets using criteria",
+        list_tickets_command,
+        [ option("opened", "only list opened tickets", False)
+        , option("closed", "only list closed tickets", False)
+        , option("tags",
+                 ( "list tickets having the given tags (separated by a comma)."
+                   " Listed tickets must have every given tags."),
+                 True)
+        ]
     )
 ]
 
