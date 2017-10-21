@@ -106,7 +106,7 @@ def is_child_of(child, parent):
     if child.startswith(parent + "."):
         split_child = child.split(".")
         split_parent = parent.split(".")
-        return len(split_child) == len(split_parent) + 1
+        return len(split_child) > len(split_parent)
     return False
 
 def find_tickets_childs(directory, name):
