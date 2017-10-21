@@ -12,7 +12,7 @@ from pyticket.commands.tickets import (
     create_ticket, edit_ticket, show_ticket, list_tickets_command,
     close_ticket, reopen_ticket, delete_ticket, rename_ticket
 )
-from pyticket.commands.tags import add_tag
+from pyticket.commands.tags import add_tag, remove_tag
 
 COMMANDS = [
     command(
@@ -78,6 +78,11 @@ COMMANDS = [
         "add-tag",
         "Add a tag to the given ticket",
         add_tag
+    ),
+    command(
+        "remove-tag",
+        "Remove a tag from the given ticket",
+        remove_tag
     )
 ]
 
