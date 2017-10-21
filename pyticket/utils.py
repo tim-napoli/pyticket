@@ -88,3 +88,16 @@ def find_ticket_directory(name):
     if name in closed_tickets:
         return "closed"
     raise Exception("there is no ticket '{}'".format(name))
+
+def get_ticket_parent(name):
+    path = name.split(".")
+    if len(path) > 1:
+        return ".".join(path[0:-1])
+    return None
+
+def is_ticket(name):
+    opened_tickets = list_tickets("opened")
+    closed_tickets = list_tickets("closed")
+    if name in opened_tickets or name in closed_tickets:
+        return True
+    return False

@@ -8,12 +8,17 @@ from vmd import build_render, create_display_writer, load_config, build_parser
 from pyticket.utils import (
     configuration, get_home_path, get_opened_tickets_path, expand_template,
     read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
-    get_closed_tickets_path, find_ticket_directory, get_root_path
+    get_closed_tickets_path, find_ticket_directory, get_root_path,
+    get_ticket_parent, is_ticket
 )
 
 def create_ticket(options,
                   ticket_name : "The ticket name",
                   template : "The template to use" = None):
+    parent = get_ticket_parent(ticket_name)
+    if parent and not is_ticket(parent):
+        raise Exception("ticket's parent '{}' doesn't exist".format(parent))
+
     ticket_path = "{}/{}".format(get_opened_tickets_path(), ticket_name)
     if template:
         content = expand_template(template, {"ticket": ticket_name})
