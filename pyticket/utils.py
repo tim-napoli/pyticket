@@ -101,3 +101,28 @@ def is_ticket(name):
     if name in opened_tickets or name in closed_tickets:
         return True
     return False
+
+def is_child_of(child, parent):
+    if child.startswith(parent + "."):
+        split_child = child.split(".")
+        split_parent = parent.split(".")
+        return len(split_child) == len(split_parent) + 1
+    return False
+
+def find_tickets_childs(directory, name):
+    childs = []
+    tickets = list_tickets(directory)
+    for ticket in tickets:
+        if is_child_of(ticket, name):
+            childs.append(ticket)
+    return childs
+
+def find_tickets_childs_deep(directory, name):
+    childs = find_tickets_childs(directory, name)
+    deep = []
+    for child in childs:
+        deep += find_tickets_childs_deep(directory, child)
+    return childs + deep
+
+def is_closed_ticket(name):
+    return name in list_tickets("closed")
