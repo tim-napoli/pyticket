@@ -9,7 +9,8 @@ from pyticket.utils import (
     configuration, get_home_path, get_opened_tickets_path, expand_template,
     read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
     get_closed_tickets_path, find_ticket_directory, get_root_path,
-    get_ticket_parent, is_ticket, find_tickets_childs_deep
+    get_ticket_parent, is_ticket, find_tickets_childs_deep,
+    find_tickets_childs, is_closed_ticket
 )
 
 def create_ticket(options,
@@ -104,6 +105,9 @@ def close_ticket(options, name : "The ticket name"):
     shutil.move(open_path, close_path)
 
 def reopen_ticket(options, name : "The ticket name"):
+    parent = get_ticket_parent(name)
+    if is_closed_ticket(parent):
+        reopen_ticket(options, parent)
     open_path = get_opened_tickets_path() + "/" + name
     close_path = get_closed_tickets_path() + "/" + name
     shutil.move(close_path, open_path)
