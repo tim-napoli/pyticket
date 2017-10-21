@@ -15,6 +15,8 @@ from pyticket.utils import (
 def create_ticket(options,
                   ticket_name : "The ticket name",
                   template : "The template to use" = None):
+    if is_ticket(ticket_name):
+        raise Exception("ticket '{}' already exist.".format(ticket_name))
     parent = get_ticket_parent(ticket_name)
     if parent and not is_ticket(parent):
         raise Exception("ticket's parent '{}' doesn't exist".format(parent))
