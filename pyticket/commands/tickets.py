@@ -10,7 +10,7 @@ from pyticket.utils import (
     read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
     get_closed_tickets_path, find_ticket_directory, get_root_path,
     get_ticket_parent, is_ticket, find_tickets_childs_deep,
-    find_tickets_childs, is_closed_ticket
+    find_tickets_childs, is_closed_ticket, is_child_of
 )
 
 def create_ticket(options,
@@ -61,11 +61,15 @@ def show_ticket(options, ticket_name : "The ticket name"):
     renderer.render_document(doc)
     print("")
 
-def list_tickets_command(options):
+def list_tickets_command(options,
+                     ticket_name : "List given ticket and its childs" = None):
     def show_list_tickets(directory, tickets, tags):
         indentations = {}
         tickets.sort()
         for ticket in tickets:
+            if (ticket_name and (not ticket == ticket_name and
+                                    not is_child_of(ticket, ticket_name))):
+                continue
             ticket_content = read_ticket(directory, ticket)
             show_ticket = True
             ticket_tags = get_ticket_tags(ticket_content)
@@ -73,16 +77,18 @@ def list_tickets_command(options):
                 inter = list(set(tags).intersection(ticket_tags))
                 show_ticket = len(inter) == len(tags)
 
+            if not show_ticket:
+                continue
+
             parent = get_ticket_parent(ticket)
             if parent and parent in indentations:
                 indentations[ticket] = indentations[parent] + 2
             else:
                 indentations[ticket] = 0
 
-            if show_ticket:
-                print("    {}{} ({})".format(
-                    " " * indentations[ticket] ,ticket, ", ".join(ticket_tags)
-                ))
+            print("    {}{} ({})".format(
+                " " * indentations[ticket] ,ticket, ", ".join(ticket_tags)
+            ))
 
     tickets_from = ["opened", "closed"]
     if "opened" in options:
