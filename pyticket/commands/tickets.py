@@ -115,13 +115,18 @@ def reopen_ticket(options, name : "The ticket name"):
 def delete_ticket(options, name : "The ticket name"):
     force = "force" in options
     directory = find_ticket_directory(name)
+    remove = True
     if not force:
         answer = input(
-            "Are you sure you want to supress '{}' ? [Y/n] ".format(name)
+            ("Are you sure you want to supress '{}' and all its childs ? "
+             "[Y/n] ").format(name)
         )
-        if answer == "Y" or answer == "y" or answer == "":
-            os.remove("{}/{}/{}".format(get_root_path(), directory, name))
-    else:
+        remove = answer == "Y" or answer == "y" or answer == ""
+    if remove:
+        childs = (  find_tickets_childs("opened", name)
+                  + find_tickets_childs("closed", name))
+        for child in childs:
+            delete_ticket({"force": None}, child)
         os.remove("{}/{}/{}".format(get_root_path(), directory, name))
 
 def rename_ticket(options, name : "The ticket name",
