@@ -6,7 +6,7 @@ from vmd import build_render, create_display_writer, load_config, build_parser
 
 from pyticket.utils import (
     configuration, get_home_path, get_opened_tickets_path, expand_template,
-    read_opened_ticket
+    read_opened_ticket, read_ticket, list_tickets, get_ticket_tags
 )
 
 def create_ticket(options,
@@ -43,3 +43,28 @@ def show_ticket(options, ticket_name : "The ticket name"):
 
     renderer.render_document(doc)
     print("")
+
+def list_tickets_command(options):
+    def show_list_tickets(directory, tickets, tags):
+        for ticket in tickets:
+            ticket_content = read_ticket(directory, ticket)
+            show_ticket = True
+            if tags:
+                ticket_tags = get_ticket_tags(ticket_content)
+                inter = list(set(tags).intersection(ticket_tags))
+                show_ticket = len(inter) == len(tags)
+            if show_ticket:
+                print("    {}".format(ticket))
+
+    tickets_from = ["opened", "closed"]
+    if "opened" in options:
+        tickets_from = ["opened"]
+    if "closed" in options:
+        tickets_from = ["closed"]
+    tags = []
+    if "tags" in options:
+        tags = options["tags"].split(",")
+
+    for directory in tickets_from:
+        print(directory + ":")
+        show_list_tickets(directory, list_tickets(directory), tags)

@@ -1,4 +1,5 @@
 import json
+import os
 import os.path
 
 from string import Template
@@ -64,4 +65,18 @@ def read_opened_ticket(ticket_name):
 
 def read_closed_ticket(ticket_name):
     return read_ticket("closed", ticket_name)
+
+def list_tickets(directory):
+    path = "{}/{}".format(get_root_path(), directory)
+    tickets = os.listdir(path)
+    return tickets
+
+def get_ticket_tags(ticket_content):
+    lines = ticket_content.splitlines()
+    if not lines:
+        return []
+    tag_line = lines[-1]
+    if tag_line.startswith("tags:"):
+        return tag_line.split()[1:]
+    return []
 
