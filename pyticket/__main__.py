@@ -86,9 +86,7 @@ COMMANDS = [
     )
 ]
 
-def main():
-    args = sys.argv[1:]
-
+def main(args=[]):
     if not args:
         print_usage(sys.argv[0], COMMANDS)
         sys.exit(0)
@@ -96,4 +94,5 @@ def main():
     execute_argv(COMMANDS, args)
 
 if __name__ == '__main__':
-    main()
+    args = sys.argv[1:]
+    main(args)

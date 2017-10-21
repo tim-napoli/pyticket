@@ -1,0 +1,69 @@
+_find_opened_tickets() {
+    local tickets=`ls .pyticket/opened`
+    echo "$tickets"
+}
+
+_find_closed_tickets() {
+    local tickets=`ls .pyticket/closed`
+    echo "$tickets"
+}
+
+_find_tickets() {
+    local opened=$(_find_opened_tickets)
+    local closed=$(_find_closed_tickets)
+    local tickets=("${opened[@]} ${closed[@]}")
+    echo "$tickets"
+}
+
+_pyticket_tickets_comp() {
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    tickets=$(_find_tickets)
+    echo $(compgen -W "${tickets}" -- ${cur})
+}
+
+_pyticket_opened_comp() {
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    tickets=$(_find_opened_tickets)
+    echo $(compgen -W "${tickets}" -- ${cur})
+}
+
+_pyticket_closed_comp() {
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    tickets=$(_find_closed_tickets)
+    echo $(compgen -W "${tickets}" -- ${cur})
+}
+
+_pyticket() {
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    commands="create edit show list close reopen delete rename add-tag "
+    commands+=" remove-tag"
+    if [ "$prev" == "edit" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "delete" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "close" ]; then
+        COMPREPLY=($(_pyticket_opened_comp))
+    elif [ "$prev" == "reopen" ]; then
+        COMPREPLY=($(_pyticket_closed_comp))
+    elif [ "$prev" == "show" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "rename" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "list" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "add-tag" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "remove-tag" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    elif [ "$prev" == "create" ]; then
+        COMPREPLY=($(_pyticket_tickets_comp))
+    else
+        COMPREPLY=($(compgen -W "${commands}" -- ${cur}))
+    fi
+    return 0
+}
+complete -F _pyticket pyticket
+complete -F _pyticket pyticket.py
+complete -F _pyticket ./pyticket.py
