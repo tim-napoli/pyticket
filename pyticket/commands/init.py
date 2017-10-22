@@ -3,6 +3,7 @@ import os.path
 import getpass
 
 from pyticket import PyticketException
+from pyticket import migrations as migrations
 from pyticket.utils import (
     get_root_path, get_home_path, get_opened_tickets_path,
     get_closed_tickets_path, get_templates_path, configuration
@@ -47,6 +48,8 @@ def init(options, directory : "The pyticket repository directory"):
         f.write(DEFAULT_BUG_TEMPLATE)
     with open(get_templates_path() + "/feature", "w+") as f:
         f.write(DEFAULT_FEATURE_TEMPLATE)
+
+    migrations.update_current_migration(directory)
 
     # Create default configuration file if needed.
     if not os.path.isdir(get_home_path()):

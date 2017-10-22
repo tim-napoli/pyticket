@@ -5,6 +5,7 @@ PyTicket main program.
 import sys
 from pyticket import PyticketException
 from pyticket import utils as utils
+from pyticket import migrations as migrations
 from pyticket.command import (
     command, argument, print_usage, execute_argv, option
 )
@@ -111,6 +112,9 @@ def main(args=[]):
     if cmd not in extern_commands and not utils.is_pyticket_repository():
         print('pyticket: current directory is not a pyticket repository.')
         sys.exit(1)
+
+    if utils.is_pyticket_repository():
+        migrations.apply_migrations()
 
     try:
         execute_argv(COMMANDS, args)
