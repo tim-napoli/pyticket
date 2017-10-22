@@ -38,7 +38,7 @@ _pyticket() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     commands="create edit show list close reopen delete rename add-tag "
-    commands+=" remove-tag"
+    commands+=" remove-tag configure"
     if [ "$prev" == "edit" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))
     elif [ "$prev" == "delete" ]; then
