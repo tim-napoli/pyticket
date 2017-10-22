@@ -4,6 +4,7 @@ PyTicket main program.
 """
 import sys
 from pyticket import PyticketException
+from pyticket import utils as utils
 from pyticket.command import (
     command, argument, print_usage, execute_argv, option
 )
@@ -91,6 +92,12 @@ def main(args=[]):
     if not args:
         print_usage(sys.argv[0], COMMANDS)
         sys.exit(0)
+
+    extern_commands = ["init", "configure"]
+    cmd = args[0]
+    if cmd not in extern_commands and not utils.is_pyticket_repository():
+        print('pyticket: current directory is not a pyticket repository.')
+        sys.exit(1)
 
     try:
         execute_argv(COMMANDS, args)

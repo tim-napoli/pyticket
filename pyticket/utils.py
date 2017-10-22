@@ -150,3 +150,5 @@ def write_ticket(directory, name, new_content):
     with open(path, "w+") as f:
         f.write(new_content)
 
+def is_pyticket_repository(directory = "."):
+    return os.path.isdir(directory + "/.pyticket/")
