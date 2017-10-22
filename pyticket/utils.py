@@ -3,6 +3,7 @@ import os
 import os.path
 
 from string import Template
+from pyticket import PyticketException
 
 def get_root_path(directory = "."):
     return "{}/.pyticket".format(directory)
@@ -27,7 +28,7 @@ class configuration:
 
     def set_value(self, name, value):
         if name not in configuration.ALLOWED_VALUES:
-            raise ValueError(
+            raise PyticketException(
                 "'{}' is not a valid configuration key".format(name)
             )
         self.values[name] = value
@@ -50,7 +51,9 @@ class configuration:
 def expand_template(template_name, values):
     path = "{}/{}".format(get_templates_path(), template_name)
     if not os.path.isfile(path):
-        raise RuntimeError("Template '{}' doesn't exist".format(template_name))
+        raise PyticketException(
+            "template '{}' doesn't exist".format(template_name)
+        )
     with open(path, 'r') as f:
         content = Template(f.read())
         return content.safe_substitute(**values)
@@ -87,7 +90,7 @@ def find_ticket_directory(name):
     closed_tickets = list_tickets("closed")
     if name in closed_tickets:
         return "closed"
-    raise Exception("there is no ticket '{}'".format(name))
+    raise PyticketException("there is no ticket '{}'".format(name))
 
 def get_ticket_parent(name):
     path = name.split(".")

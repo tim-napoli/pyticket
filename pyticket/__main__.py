@@ -3,6 +3,7 @@
 PyTicket main program.
 """
 import sys
+from pyticket import PyticketException
 from pyticket.command import (
     command, argument, print_usage, execute_argv, option
 )
@@ -91,7 +92,11 @@ def main(args=[]):
         print_usage(sys.argv[0], COMMANDS)
         sys.exit(0)
 
-    execute_argv(COMMANDS, args)
+    try:
+        execute_argv(COMMANDS, args)
+    except PyticketException as ex:
+        print('pyticket: ' + str(ex))
+        sys.exit(1)
 
 if __name__ == '__main__':
     args = sys.argv[1:]

@@ -5,6 +5,7 @@ import os.path
 
 from vmd import build_render, create_display_writer, load_config, build_parser
 
+from pyticket import PyticketException
 from pyticket.utils import (
     configuration, get_home_path, get_opened_tickets_path, expand_template,
     read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
@@ -17,10 +18,14 @@ def create_ticket(options,
                   ticket_name : "The ticket name",
                   template : "The template to use" = None):
     if is_ticket(ticket_name):
-        raise Exception("ticket '{}' already exist.".format(ticket_name))
+        raise PyticketException(
+            "ticket '{}' already exist.".format(ticket_name)
+        )
     parent = get_ticket_parent(ticket_name)
     if parent and not is_ticket(parent):
-        raise Exception("ticket's parent '{}' doesn't exist".format(parent))
+        raise PyticketException(
+            "ticket's parent '{}' doesn't exist".format(parent)
+        )
 
     ticket_path = "{}/{}".format(get_opened_tickets_path(), ticket_name)
     if template:
@@ -39,7 +44,9 @@ def edit_ticket(argv, ticket_name : "The ticket name"):
     directory = find_ticket_directory(ticket_name)
     ticket_path = "{}/{}/{}".format(get_root_path(), directory, ticket_name)
     if not os.path.isfile(ticket_path):
-        raise RuntimeError("Ticket '{}' doesn't exist".format(ticket_name))
+        raise PyticketException(
+            "ticket '{}' doesn't exist".format(ticket_name)
+        )
     config = configuration.load(get_home_path())
     subprocess.call([config.values["editor"], ticket_path])
 
@@ -106,7 +113,7 @@ def list_tickets_command(options,
 def close_ticket(options, name : "The ticket name"):
     childs = find_tickets_childs_deep("opened", name)
     if childs:
-        raise Exception(
+        raise PyticketException(
             "cannot close '{}', it has opened childs ({})".format(
                 name, ", ".join(childs)
             )

@@ -2,6 +2,7 @@
 Command line management.
 """
 import inspect
+from pyticket import PyticketException
 
 class argument:
     def __init__(self, name, description, optional):
@@ -45,7 +46,7 @@ class command:
             doc = annotations[arg.name]
             if (arg.default != inspect._empty
                     and arg.default != None):
-                raise Exception(
+                raise PyticketException(
                     "only 'None' default parameter value is authorized for "
                     "commands callbacks"
                 )
@@ -69,7 +70,7 @@ class command:
             if is_option(arg):
                 opt = self.find_option(arg[2:])
                 if not opt:
-                    raise Exception(
+                    raise PyticketException(
                         "command '{}' has no option called '{}'".format(
                             self.name, arg[2:]
                         )
@@ -78,7 +79,7 @@ class command:
                 if opt.has_arg:
                     if (current_opt + 1 == len(argv) or
                             is_option(argv[current_opt + 1])):
-                        raise Exception(
+                        raise PyticketException(
                             "option '{}' needs a parameter".format(opt.name)
                         )
                     opt_arg = argv[current_opt + 1]
@@ -86,14 +87,14 @@ class command:
                 options[opt.name] = opt_arg
                 current_opt = current_opt + 1
             else:
-                raise Exception("unexpected token '{}'".format(opt))
+                raise PyticketException("unexpected token '{}'".format(opt))
         return options
 
     def try_execute(self, argv):
         if argv[0] != self.name:
             return False
         if self.callback == None:
-            raise Exception(
+            raise PyticketException(
                 "command '{}' is not implemented".format(self.name)
             )
         current_arg = 0
@@ -105,7 +106,7 @@ class command:
             current_arg = current_arg + 1
         if (current_arg < len(self.args)
                 and not self.args[current_arg].optional):
-            raise Exception(
+            raise PyticketException(
                 "missing argument '{}' for command '{}'".format(
                     self.args[current_arg].name, self.name
                 )
@@ -141,5 +142,5 @@ def execute_argv(commands, argv):
     for cmd in commands:
         if cmd.try_execute(argv):
             return
-    raise Exception("command '{}' is not valid".format(argv[0]))
+    raise PyticketException("command '{}' is not valid".format(argv[0]))
 
