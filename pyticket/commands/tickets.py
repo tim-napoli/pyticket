@@ -6,30 +6,24 @@ import os.path
 from vmd import build_render, create_display_writer, load_config, build_parser
 
 from pyticket import PyticketException
-from pyticket.utils import (
-    configuration, get_home_path, get_opened_tickets_path, expand_template,
-    read_opened_ticket, read_ticket, list_tickets, get_ticket_tags,
-    get_closed_tickets_path, find_ticket_directory, get_root_path,
-    get_ticket_parent, is_ticket, find_tickets_childs_deep,
-    find_tickets_childs, is_closed_ticket, is_child_of
-)
+from pyticket import utils as utils
 
 def create_ticket(options,
                   ticket_name : "The ticket name",
                   template : "The template to use" = None):
-    if is_ticket(ticket_name):
+    if utils.is_ticket(ticket_name):
         raise PyticketException(
             "ticket '{}' already exist.".format(ticket_name)
         )
-    parent = get_ticket_parent(ticket_name)
-    if parent and not is_ticket(parent):
+    parent = utils.get_ticket_parent(ticket_name)
+    if parent and not utils.is_ticket(parent):
         raise PyticketException(
             "ticket's parent '{}' doesn't exist".format(parent)
         )
 
-    ticket_path = "{}/{}".format(get_opened_tickets_path(), ticket_name)
+    ticket_path = "{}/{}".format(utils.get_opened_tickets_path(), ticket_name)
     if template:
-        content = expand_template(template, {"ticket": ticket_name})
+        content = utils.expand_template(template, {"ticket": ticket_name})
         with open(ticket_path, "w+") as f:
             f.write(content)
 
@@ -37,25 +31,26 @@ def create_ticket(options,
         if not template:
             open(ticket_path, "w+").close()
     else:
-        config = configuration.load(get_home_path())
+        config = utils.configuration.load(utils.get_home_path())
         subprocess.call([config.values["editor"], ticket_path])
 
 def edit_ticket(argv, ticket_name : "The ticket name"):
-    directory = find_ticket_directory(ticket_name)
-    ticket_path = "{}/{}/{}".format(get_root_path(), directory, ticket_name)
+    directory = utils.find_ticket_directory(ticket_name)
+    ticket_path = "{}/{}/{}".format(utils.get_root_path(), directory,
+                                    ticket_name)
     if not os.path.isfile(ticket_path):
         raise PyticketException(
             "ticket '{}' doesn't exist".format(ticket_name)
         )
-    config = configuration.load(get_home_path())
+    config = utils.configuration.load(utils.get_home_path())
     subprocess.call([config.values["editor"], ticket_path])
 
 def show_ticket(options, ticket_name : "The ticket name"):
     class parser_args:
         tab_spaces = 4
 
-    directory = find_ticket_directory(ticket_name)
-    ticket_content = read_ticket(directory, ticket_name)
+    directory = utils.find_ticket_directory(ticket_name)
+    ticket_content = utils.read_ticket(directory, ticket_name)
 
     parser = build_parser(parser_args)
     config = load_config()
@@ -74,12 +69,12 @@ def list_tickets_command(options,
         indentations = {}
         tickets.sort()
         for ticket in tickets:
-            if (ticket_name and (not ticket == ticket_name and
-                                    not is_child_of(ticket, ticket_name))):
+            if (ticket_name and not ticket == ticket_name and
+                    not utils.is_child_of(ticket, ticket_name)):
                 continue
-            ticket_content = read_ticket(directory, ticket)
+            ticket_content = utils.read_ticket(directory, ticket)
             show_ticket = True
-            ticket_tags = get_ticket_tags(ticket_content)
+            ticket_tags = utils.get_ticket_tags(ticket_content)
             if tags:
                 inter = list(set(tags).intersection(ticket_tags))
                 show_ticket = len(inter) == len(tags)
@@ -87,7 +82,7 @@ def list_tickets_command(options,
             if not show_ticket:
                 continue
 
-            parent = get_ticket_parent(ticket)
+            parent = utils.get_ticket_parent(ticket)
             if parent and parent in indentations:
                 indentations[ticket] = indentations[parent] + 2
             else:
@@ -108,31 +103,31 @@ def list_tickets_command(options,
 
     for directory in tickets_from:
         print(directory + ":")
-        show_list_tickets(directory, list_tickets(directory), tags)
+        show_list_tickets(directory, utils.list_tickets(directory), tags)
 
 def close_ticket(options, name : "The ticket name"):
-    childs = find_tickets_childs_deep("opened", name)
+    childs = utils.find_tickets_childs_deep("opened", name)
     if childs:
         raise PyticketException(
             "cannot close '{}', it has opened childs ({})".format(
                 name, ", ".join(childs)
             )
     )
-    open_path = get_opened_tickets_path() + "/" + name
-    close_path = get_closed_tickets_path() + "/" + name
+    open_path = utils.get_opened_tickets_path() + "/" + name
+    close_path = utils.get_closed_tickets_path() + "/" + name
     shutil.move(open_path, close_path)
 
 def reopen_ticket(options, name : "The ticket name"):
-    parent = get_ticket_parent(name)
-    if is_closed_ticket(parent):
+    parent = utils.get_ticket_parent(name)
+    if utils.is_closed_ticket(parent):
         reopen_ticket(options, parent)
-    open_path = get_opened_tickets_path() + "/" + name
-    close_path = get_closed_tickets_path() + "/" + name
+    open_path = utils.get_opened_tickets_path() + "/" + name
+    close_path = utils.get_closed_tickets_path() + "/" + name
     shutil.move(close_path, open_path)
 
 def delete_ticket(options, name : "The ticket name"):
     force = "force" in options
-    directory = find_ticket_directory(name)
+    directory = utils.find_ticket_directory(name)
     remove = True
     if not force:
         answer = input(
@@ -141,22 +136,22 @@ def delete_ticket(options, name : "The ticket name"):
         )
         remove = answer == "Y" or answer == "y" or answer == ""
     if remove:
-        childs = (  find_tickets_childs("opened", name)
-                  + find_tickets_childs("closed", name))
+        childs = (  utils.find_tickets_childs("opened", name)
+                  + utils.find_tickets_childs("closed", name))
         for child in childs:
             delete_ticket({"force": None}, child)
-        os.remove("{}/{}/{}".format(get_root_path(), directory, name))
+        os.remove("{}/{}/{}".format(utils.get_root_path(), directory, name))
 
 def rename_ticket(options, name : "The ticket name",
                   new_name : "The new ticket name"):
-    childs = (  find_tickets_childs("opened", name)
-              + find_tickets_childs("closed", name))
+    childs = (  utils.find_tickets_childs("opened", name)
+              + utils.find_tickets_childs("closed", name))
     for child in childs:
         child_split = child.split(".")
         child_new_name = new_name + "." + child_split[-1]
         rename_ticket(options, child, child_new_name)
 
-    directory = find_ticket_directory(name)
-    src_path = "{}/{}/{}".format(get_root_path(), directory, name)
-    dst_path = "{}/{}/{}".format(get_root_path(), directory, new_name)
+    directory = utils.find_ticket_directory(name)
+    src_path = "{}/{}/{}".format(utils.get_root_path(), directory, name)
+    dst_path = "{}/{}/{}".format(utils.get_root_path(), directory, new_name)
     shutil.move(src_path, dst_path)
