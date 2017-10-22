@@ -88,10 +88,23 @@ COMMANDS = [
     )
 ]
 
+def help_(options, command : "Print the help of the given command" = None):
+    if command:
+        for cmd in COMMANDS:
+            if cmd.name == command:
+                cmd.usage()
+                return
+        raise PyticketException("command '{}' doesn't exist".format(command))
+    else:
+        print_usage("pyticket", COMMANDS)
+
 def main(args=[]):
+    COMMANDS.insert(0, command("help", "Show this help", help_))
+
     if not args:
-        print_usage(sys.argv[0], COMMANDS)
+        print_usage("pyticket", COMMANDS)
         sys.exit(0)
+
 
     extern_commands = ["init", "configure"]
     cmd = args[0]
