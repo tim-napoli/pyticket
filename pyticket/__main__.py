@@ -13,7 +13,8 @@ from pyticket.commands.init import init
 from pyticket.commands.configure import configure
 from pyticket.commands.tickets import (
     create_ticket, edit_ticket, show_ticket, list_tickets_command,
-    close_ticket, reopen_ticket, delete_ticket, rename_ticket
+    close_ticket, reopen_ticket, delete_ticket, rename_ticket, works_on,
+    release
 )
 from pyticket.commands.tags import add_tag, remove_tag
 
@@ -86,6 +87,16 @@ COMMANDS = [
         "remove-tag",
         "Remove a tag from the given ticket",
         remove_tag
+    ),
+    command(
+        "works-on",
+        "Set the current working ticket",
+        works_on
+    ),
+    command(
+        "release",
+        "Release the working ticket",
+        release
     )
 ]
 

@@ -152,3 +152,13 @@ def write_ticket(directory, name, new_content):
 
 def is_pyticket_repository(directory = "."):
     return os.path.isdir(directory + "/.pyticket/")
+
+def get_working_ticket():
+    path = "{}/working".format(get_root_path())
+    with open(path, "r") as f:
+        return f.read()
+
+def set_working_ticket(name):
+    path = "{}/working".format(get_root_path())
+    with open(path, "w+") as f:
+        return f.write(name)

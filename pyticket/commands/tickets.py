@@ -66,6 +66,7 @@ def show_ticket(options, ticket_name : "The ticket name"):
 def list_tickets_command(options,
                      ticket_name : "List given ticket and its childs" = None):
     def show_list_tickets(directory, tickets, tags):
+        working_ticket = utils.get_working_ticket()
         indentations = {}
         tickets.sort()
         for ticket in tickets:
@@ -88,7 +89,8 @@ def list_tickets_command(options,
             else:
                 indentations[ticket] = 0
 
-            print("    {}{} ({})".format(
+            print("  {} {}{} ({})".format(
+                " " if not ticket == working_ticket else "*",
                 " " * indentations[ticket] ,ticket, ", ".join(ticket_tags)
             ))
 
@@ -113,6 +115,11 @@ def close_ticket(options, name : "The ticket name"):
                 name, ", ".join(childs)
             )
     )
+
+    working_ticket = utils.get_working_ticket()
+    if name == working_ticket:
+        release(name)
+
     open_path = utils.get_opened_tickets_path() + "/" + name
     close_path = utils.get_closed_tickets_path() + "/" + name
     shutil.move(open_path, close_path)
@@ -155,3 +162,12 @@ def rename_ticket(options, name : "The ticket name",
     src_path = "{}/{}/{}".format(utils.get_root_path(), directory, name)
     dst_path = "{}/{}/{}".format(utils.get_root_path(), directory, new_name)
     shutil.move(src_path, dst_path)
+
+def works_on(options, name : "The ticket to work on"):
+    directory = utils.find_ticket_directory(name)
+    if directory == "closed":
+        raise PyticketException("ticket '{}' is closed.".format(name))
+    utils.set_working_ticket(name)
+
+def release(options):
+    utils.set_working_ticket("")
