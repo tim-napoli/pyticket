@@ -162,3 +162,8 @@ def set_working_ticket(name):
     path = "{}/working".format(get_root_path())
     with open(path, "w+") as f:
         return f.write(name)
+
+def get_ticket_last_update_date(directory, ticket):
+    return os.path.getmtime(
+        "{}/{}/{}".format(get_root_path(), directory, ticket)
+    )

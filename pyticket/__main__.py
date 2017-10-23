@@ -17,6 +17,7 @@ from pyticket.commands.tickets import (
     release
 )
 from pyticket.commands.tags import add_tag, remove_tag
+from pyticket.commands.table import table
 
 COMMANDS = [
     command(
@@ -97,6 +98,17 @@ COMMANDS = [
         "release",
         "Release the working ticket",
         release
+    ),
+    command(
+        "table",
+        "Show tickets in a table",
+        table,
+        [ option("sorted-name", "Sort the table with ticket names", False),
+          option("count", "Number of tickets to show", True),
+          option("opened", "Show opened tickets", False),
+          option("closed", "Show closed tickets", False),
+          option("tags", "Filter using given tags", True)
+        ]
     )
 ]
 
