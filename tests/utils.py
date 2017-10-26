@@ -1,8 +1,9 @@
 """This module contains utility functions to write tests."""
 
+
 def repeat(count):
     """Decorator that will repeat the given test method class.
-    
+
     :param count: times the decorated test method must be executed.
 
     >>> class MyClassTest(unittest.TestCase):
@@ -23,3 +24,13 @@ def repeat(count):
                     self.tearDown()
         return wrapped
     return repeated
+
+
+def read_file_content(path):
+    """Returns the content of the file at ```path```.
+
+    :param path: the path of the file to read.
+    :return: the content of the file.
+    """
+    with open(path, "r") as f:
+        return f.read()
