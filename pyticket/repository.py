@@ -138,7 +138,19 @@ class Repository:
         :return: the ticket content.
         :raises PyticketException: the given ticket doesn't exist.
         """
+        if not self.has_ticket(name):
+            raise PyticketException("ticket '{}' doesn't exist".format(name))
         return "{}/{}".format(self.contents, name)
+
+    def has_ticket_content(self, name):
+        """Returns true if the given ticket has a content file.
+
+        :param name: the ticket name.
+        :return: True if the ticket has a content file.
+        :raises PyticketException: the givent ticket doesn't exist.
+        """
+        path = self.get_ticket_content_path(name)
+        return os.path.isfile(path)
 
     def create_ticket(self, name, status, tags, create=False):
         """Create a new ticket in the repository.
@@ -206,9 +218,7 @@ class Repository:
         :param content: the ticket content.
         :raises PyticketException: the ticket 'name' doesn't exist.
         """
-        if not self.has_ticket(name):
-            raise PyticketException("ticket '{}' doesn't exist".format(name))
-        path = "{}/{}".format(self.contents, name)
+        path = self.get_ticket_content_path(name)
         with open(path, "w+") as f:
             f.write(content)
 
@@ -219,12 +229,10 @@ class Repository:
         :return: the ticket content.
         :raises PyticketException: the ticket doesn't exist or has no content.
         """
-        if not self.has_ticket(name):
-            raise PyticketException("ticket '{}' doesn't exist".format(name))
-        path = "{}/{}".format(self.contents, name)
-        if not os.path.isfile(path):
+        if not self.has_ticket_content(name):
             raise PyticketException(
                 "ticket '{}' has no content".format(name)
             )
+        path = self.get_ticket_content_path(name)
         with open(path, "r") as f:
             return f.read()
