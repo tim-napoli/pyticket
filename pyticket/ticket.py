@@ -23,6 +23,11 @@ class MetaTicket:
             name=self.name, status=self.status, tags=",".join(self.tags)
         )
 
+    def __eq__(self, other):
+        return (self.name == other.name and
+                self.status == other.status and
+                self.tags == other.tags)
+
     @staticmethod
     def parse(line):
         """Parse a pyticket line."""
