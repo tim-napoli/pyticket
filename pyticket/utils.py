@@ -100,8 +100,12 @@ def find_ticket_directory(name):
         return "closed"
     raise PyticketException("there is no ticket '{}'".format(name))
 
-def get_ticket_parent(name):
-    """Returns the ticket's parent name."""
+def get_ticket_parent_name(name):
+    """Returns the ticket's parent name.
+
+    :return: if the name doesn't contain any '.', returns None, else returns
+             the ticket's parent's name.
+    """
     path = name.split(".")
     if len(path) > 1:
         return ".".join(path[0:-1])

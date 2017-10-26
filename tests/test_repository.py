@@ -1,13 +1,17 @@
 import unittest
 import os.path
 import shutil
+import random
 
 from pyticket import PyticketException, migrations
+from pyticket.ticket import MetaTicket
 from pyticket.repository import (
         Repository, DEFAULT_BUG_TEMPLATE, DEFAULT_FEATURE_TEMPLATE
 )
 
 from tests import utils
+from tests import generators
+from tests.utils import repeat
 
 
 class RepositoryTest(unittest.TestCase):
@@ -63,6 +67,69 @@ class RepositoryTest(unittest.TestCase):
         # Test init cannot recreate a repository on an existing repository
         self.assertRaises(
             PyticketException, Repository, self.root, create=True
+        )
+
+    @repeat(10)
+    def test_create_ticket(self):
+        r = Repository(self.root, create=True)
+
+        taken_names = []
+        tickets = []
+        for i in range(0, random.randrange(100)):
+            if not random.randrange(10):
+                name = generators.gen_child_ticket_name(taken_names)
+            else:
+                name = generators.gen_ticket_name()
+            if name in taken_names:
+                continue
+            taken_names.append(name)
+            status = random.choice(["opened", "closed"])
+            tags = generators.gen_tags()
+            created = random.choice([True, False])
+
+            r.create_ticket(name, status, tags, created)
+
+            meta = MetaTicket(name, status, tags)
+            tickets.append((meta, created))
+
+        # We reload the repository to check if the tickets file has been
+        # updated.
+        r = Repository(self.root)
+        self.assertEqual(len(tickets), len(r.tickets))
+        for ticket, created in tickets:
+            repo_ticket = r.get_ticket(ticket.name)
+            self.assertEqual(repo_ticket, ticket)
+            if created:
+                path = "{}/{}".format(r.contents, repo_ticket.name)
+                self.assertTrue(os.path.isfile(path))
+
+    def test_create_ticket_invalid_name(self):
+        r = Repository(self.root, create=True)
+        ticket_name = "this-is-an#~ê³²¹invalid-name"
+        self.assertRaises(
+            PyticketException, r.create_ticket, ticket_name, "opened", []
+        )
+
+    def test_create_ticket_invalid_parent(self):
+        r = Repository(self.root, create=True)
+        ticket_name = "unexisting-root.child"
+        self.assertRaises(
+            PyticketException, r.create_ticket, ticket_name, "opened", []
+        )
+
+    def test_create_ticket_invalid_status(self):
+        r = Repository(self.root, create=True)
+        ticket_name = generators.gen_ticket_name()
+        self.assertRaises(
+            PyticketException, r.create_ticket, ticket_name, "dksbidsg", []
+        )
+
+    def test_create_ticket_invalid_tags(self):
+        r = Repository(self.root, create=True)
+        ticket_name = generators.gen_ticket_name()
+        tags = ["valid-tag", "inv[[@ê³*ù$alid-tag"]
+        self.assertRaises(
+            PyticketException, r.create_ticket, ticket_name, "opened", tags
         )
 
 

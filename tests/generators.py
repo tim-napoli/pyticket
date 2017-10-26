@@ -6,14 +6,27 @@ from pyticket.ticket import MetaTicket
 from pyticket.configuration import Configuration
 
 
-def gen_ticket_name():
+def gen_ticket_name(can_be_child=False):
     """Generate a valid ticket name."""
     count = random.randrange(1, 20)
-    name = "".join([random.choice(MetaTicket.VALID_NAME_CHARSET)
-                   for _ in range(count)])
+    charset = (MetaTicket.VALID_NAME_CHARSET if can_be_child
+               else MetaTicket.VALID_NAME_CHARSET.replace(".", ""))
+    name = "".join([random.choice(charset) for _ in range(count)])
     if name == "." or name == "..":
         return gen_ticket_name()
     return name
+
+
+def gen_child_ticket_name(parents):
+    """Generate a ticket name as child of a random element of the 'parents'
+    list.
+
+    :param parents: the list of parent candidates.
+    :return: a ticket child of one of the parents list.
+    """
+    name = gen_ticket_name()
+    parent = random.choice(parents) + "." if parents else ""
+    return parent + name
 
 
 def gen_tag_name():

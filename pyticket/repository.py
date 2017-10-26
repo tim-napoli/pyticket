@@ -40,7 +40,7 @@ class Repository:
         self.repository = self.root + "/.pyticket"
         self.contents = self.repository + "/contents"
         self.templates = self.repository + "/templates"
-        self.tickets = []
+        self.tickets = {}
         if create:
             self.init()
         else:
@@ -49,9 +49,11 @@ class Repository:
                     "{} is not a pyticket repository".format(self.root)
                 )
             migrations.apply_migrations(self.repository)
-            self.tickets = Repository.read_tickets_file(
+            tickets = Repository.read_tickets_file(
                     self.repository + "/tickets"
             )
+            for ticket in tickets:
+                self.tickets[ticket.name] = ticket
 
     @staticmethod
     def read_tickets_file(path):
@@ -69,11 +71,19 @@ class Repository:
                 meta_tickets.append(MetaTicket.parse(line))
         return meta_tickets
 
+    def write_tickets_file(self):
+        """Replace the content of the tickets file using the current tickets
+        list.
+        """
+        with open(self.repository + "/tickets", "w+") as f:
+            for name, ticket in self.tickets.items():
+                f.write(ticket.to_string() + "\n")
+
     def init(self):
         """Initialize a new pyticket repository in the "root" directory."""
         if os.path.isdir(self.repository):
             raise PyticketException(
-                "there already exists a pyticket repository in '{}'".format(
+                "there already exists a pyticket repository at '{}'".format(
                     self.repository
                 )
             )
@@ -104,3 +114,87 @@ class Repository:
             config.save(utils.get_home_path())
 
         print("Pyticket repository created in '{}'".format(self.repository))
+
+    def has_ticket(self, name):
+        """Check the repository has the given ticket."""
+        return name in self.tickets
+
+    def get_ticket(self, name):
+        """Return the requested ticket.
+
+        :param name: the ticket's name.
+        :return: the requested ticket.
+        :raises PyticketException: the repository doesn't contain the requested
+                                   ticket.
+        """
+        if self.has_ticket(name):
+            return self.tickets[name]
+        raise PyticketException("ticket '{}' doesn't exist".format(name))
+
+    def get_ticket_content_path(self, name):
+        """Returns the full path of the of the given ticket's content.
+
+        :params name: the ticket name.
+        :return: the ticket content.
+        :raises PyticketException: the given ticket doesn't exist.
+        """
+        return "{}/{}".format(self.contents, name)
+
+    def create_ticket(self, name, status, tags, create=False):
+        """Create a new ticket in the repository.
+
+        :param name: the ticket name. This name can have some '.' to inform of
+                     the ticket hierarchy.
+        :param status: the ticket status.
+        :param tags: the ticket tags.
+        :param create: if ```True```, create the given ticket content file.
+        :raises PyticketException: the ticket cannot be created for one of the
+                                   following reasons:
+                                   - a ticket already has the given name ;
+                                   - the name is invalid ;
+                                   - the status is invalid ;
+                                   - the ticket's parent (contained in the
+                                     name) doesn't exist ;
+                                   - a given tag name is invalid.
+
+        :Exemple:
+        >>> r = Repository()
+        >>> r.create_ticket("root", "opened")
+        >>> # Create a root's child:
+        >>> r.create_ticket("root.child", "opened", ["some-tag"])
+        >>> # Will fail because "missing-root" doesn't exist:
+        >>> r.create_ticket("missing-root.child", "opened")
+        >>> # Create the ticket content file:
+        >>> r.create_ticket("with-content", "opened", [], create=True)
+        """
+        if not MetaTicket.is_valid_name(name):
+            raise PyticketException(
+                "'{}' is not a valid ticket name".format(name)
+            )
+
+        if self.has_ticket(name):
+            raise PyticketException("ticket '{}' already exists".format(name))
+
+        parent_name = utils.get_ticket_parent_name(name)
+        if parent_name and not self.has_ticket(parent_name):
+            raise PyticketException(
+                "parent ticket '{}' doesn't exist".format(parent_name)
+            )
+
+        if not MetaTicket.is_valid_status(status):
+            raise PyticketException(
+                "'{}' is not a valid status".format(status)
+            )
+
+        for tag in tags:
+            if not MetaTicket.is_valid_tag_name(tag):
+                raise PyticketException(
+                    "'{}' is not a valid tag name".format(tag)
+                )
+
+        meta_ticket = MetaTicket(name, status, tags)
+        self.tickets[meta_ticket.name] = meta_ticket
+        self.write_tickets_file()
+
+        if create:
+            open(self.get_ticket_content_path(name), "w+").close()
