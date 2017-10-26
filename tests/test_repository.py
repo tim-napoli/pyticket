@@ -17,6 +17,7 @@ from tests.utils import repeat
 class RepositoryTest(unittest.TestCase):
 
     def setUp(self):
+        self.maxDiff = None
         self.root = "/tmp/pyticket-test"
         if os.path.isdir(self.root):
             shutil.rmtree(self.root)
@@ -130,6 +131,41 @@ class RepositoryTest(unittest.TestCase):
         tags = ["valid-tag", "inv[[@ê³*ù$alid-tag"]
         self.assertRaises(
             PyticketException, r.create_ticket, ticket_name, "opened", tags
+        )
+
+    @repeat(100)
+    def test_write_and_read_ticket_content(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = random.choice(["opened", "closed"])
+        tags = generators.gen_tags()
+
+        r.create_ticket(name, status, tags)
+
+        content = generators.gen_ticket_content()
+        r.write_ticket_content(name, content)
+
+        read_content = r.read_ticket_content(name)
+        self.assertEqual(content, read_content)
+
+    def test_write_wrong_name(self):
+        r = Repository(self.root, create=True)
+        self.assertRaises(
+            PyticketException, r.write_ticket_content, "blectre", "content"
+        )
+
+    def test_read_wrong_name(self):
+        r = Repository(self.root, create=True)
+        self.assertRaises(
+            PyticketException, r.read_ticket_content, "blectre"
+        )
+
+    def test_read_no_content(self):
+        r = Repository(self.root, create=True)
+        r.create_ticket("test", "opened", [])
+        self.assertRaises(
+            PyticketException, r.read_ticket_content, "test"
         )
 
 

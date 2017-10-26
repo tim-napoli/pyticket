@@ -198,3 +198,33 @@ class Repository:
 
         if create:
             open(self.get_ticket_content_path(name), "w+").close()
+
+    def write_ticket_content(self, name, content):
+        """Write the ticket content file for the given ticket.
+
+        :param name: the ticket name.
+        :param content: the ticket content.
+        :raises PyticketException: the ticket 'name' doesn't exist.
+        """
+        if not self.has_ticket(name):
+            raise PyticketException("ticket '{}' doesn't exist".format(name))
+        path = "{}/{}".format(self.contents, name)
+        with open(path, "w+") as f:
+            f.write(content)
+
+    def read_ticket_content(self, name):
+        """Read the ticket content of the given ticket.
+
+        :param name: the ticket name.
+        :return: the ticket content.
+        :raises PyticketException: the ticket doesn't exist or has no content.
+        """
+        if not self.has_ticket(name):
+            raise PyticketException("ticket '{}' doesn't exist".format(name))
+        path = "{}/{}".format(self.contents, name)
+        if not os.path.isfile(path):
+            raise PyticketException(
+                "ticket '{}' has no content".format(name)
+            )
+        with open(path, "r") as f:
+            return f.read()
