@@ -1,5 +1,6 @@
 import string
 import inspect
+import re
 
 from pyticket import PyticketException
 
@@ -35,15 +36,40 @@ class MetaTicket:
                 )
             )
 
-        name = split[0]
-        status = split[1]
-        tags = split[2].split(",")
-        if not MetaTicket.is_valid_name(name):
-            raise PyticketException("'{}' is not a valid name".format(name))
-        if status not in ["opened", "closed"]:
-            raise PyticketException(
-                "'{}' is not a valid status".format(status)
+        NAME_PATTERN = r"(?P<name>[{}]+)".format(MetaTicket.VALID_NAME_CHARSET)
+        STATUS_PATTERN = r"(?P<status>(?:opened)|(?:closed))".format(
+            "|".join(
+                ["(?:{})".format(status) for status in MetaTicket.VALID_STATUS]
             )
+        )
+        TAGS_PATTERN = r"\((?P<tags>[{name},]*)\)".format(
+            name=MetaTicket.VALID_NAME_CHARSET
+        )
+
+        if not re.match(NAME_PATTERN, split[0]):
+            raise PyticketException(
+                "'{}' is not a valid ticket name".format(split[0])
+            )
+        if not re.match(STATUS_PATTERN, split[1]):
+            raise PyticketException(
+                "'{}' is not a valid status name".format(split[1])
+            )
+        if not re.match(TAGS_PATTERN, split[2]):
+            raise PyticketException(
+                "'{}' is not a valid tags string".format(split[2])
+            )
+
+        PATTERN = "{} {} {}".format(NAME_PATTERN, STATUS_PATTERN, TAGS_PATTERN)
+        matches = re.match(PATTERN, line)
+        if not matches:
+            raise PyticketException(
+                "'{}' is not a valid meta-ticket line".format(line)
+            )
+
+        name = matches.group("name")
+        status = matches.group("status")
+        tags_str = matches.group("tags")
+        tags = tags_str.split(",") if tags_str else []
         for tag in tags:
             if not MetaTicket.is_valid_tag_name(tag):
                 raise PyticketException(
@@ -54,6 +80,8 @@ class MetaTicket:
 
     @staticmethod
     def is_valid_name(name):
+        if not name:
+            return False
         for letter in name:
             if letter not in MetaTicket.VALID_NAME_CHARSET:
                 return False
