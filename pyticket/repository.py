@@ -257,6 +257,9 @@ class Repository:
     def switch_ticket_status(self, name, status):
         """Switch the status of the given ticket.
 
+        If reopening a closed ticket, every of its parents will be reopened
+        too.
+
         :param name: the ticket name.
         :param status: the new status of the ticket.
         :raises PyticketException: if the ticket doesn't exist or ```status```
@@ -278,6 +281,12 @@ class Repository:
                     )
 
         ticket = self.get_ticket(name)
+        if status == "opened" and ticket.status == "closed":
+            parent_name = utils.get_ticket_parent_name(name)
+            while parent_name:
+                parent = self.get_ticket(parent_name)
+                parent.status = "opened"
+                parent_name = utils.get_ticket_parent_name(parent_name)
         ticket.status = status
         self.write_tickets_file()
 
