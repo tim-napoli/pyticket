@@ -209,6 +209,23 @@ class RepositoryTest(unittest.TestCase):
             PyticketException, r.switch_ticket_status, name + "x", status
         )
 
+    def test_switch_ticket_status_opened_child(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = "opened"
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+
+        child_name = name + "." + generators.gen_ticket_name()
+        status = "opened"
+        tags = generators.gen_tags()
+        r.create_ticket(child_name, status, tags)
+
+        self.assertRaises(
+            PyticketException, r.switch_ticket_status, name, "closed"
+        )
+
     @staticmethod
     def set_ticket_as_child_of_its_ancestors(parents, name):
         """Given a map ```parents``` associating to a ticket name the

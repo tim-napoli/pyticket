@@ -257,18 +257,26 @@ class Repository:
     def switch_ticket_status(self, name, status):
         """Switch the status of the given ticket.
 
-        This is dumb since status is now a meta-data. We don't need more
-        than one content folder.
-
         :param name: the ticket name.
         :param status: the new status of the ticket.
         :raises PyticketException: if the ticket doesn't exist or ```status```
-                                   is invalid.
+                                   is invalid or if we try to close a ticket
+                                   that has opened childs.
         """
         if status not in MetaTicket.VALID_STATUS:
             raise PyticketException(
                 "'{}' is not a valid status".format(status)
             )
+
+        if status == "closed":
+            childs = self.get_ticket_childs(name, recursive=True)
+            for child in childs:
+                if child.status == "opened":
+                    raise PyticketException(
+                        "trying to close '{}', but its child '{}' is opened"
+                        .format(name, child.name)
+                    )
+
         ticket = self.get_ticket(name)
         ticket.status = status
         self.write_tickets_file()
