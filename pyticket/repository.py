@@ -152,6 +152,23 @@ class Repository:
         path = self.get_ticket_content_path(name)
         return os.path.isfile(path)
 
+    def get_ticket_childs(self, name, recursive=False):
+        """Returns every childs of the given ticket.
+
+        :param name: the ticket name.
+        :param recursive: if ```True```, returns every descendants of this
+                          ticket, and not only direct childs.
+        :return: the ticket childs.
+        """
+        childs = []
+        for candidate_key, candidate in self.tickets.items():
+            candidate_parent_name = utils.get_ticket_parent_name(candidate_key)
+            if candidate_parent_name and candidate_parent_name == name:
+                childs.append(candidate)
+                if recursive:
+                    childs += self.get_ticket_childs(candidate_key, recursive)
+        return childs
+
     def create_ticket(self, name, status, tags, create=False):
         """Create a new ticket in the repository.
 

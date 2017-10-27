@@ -8,6 +8,7 @@ from pyticket.ticket import MetaTicket
 from pyticket.repository import (
         Repository, DEFAULT_BUG_TEMPLATE, DEFAULT_FEATURE_TEMPLATE
 )
+import pyticket.utils
 
 from tests import utils
 from tests import generators
@@ -208,6 +209,73 @@ class RepositoryTest(unittest.TestCase):
         self.assertRaises(
             PyticketException, r.switch_ticket_status, name + "x", status
         )
+
+    def set_ticket_as_child_of_its_ancestors(parents, name):
+        """Given a map ```parents``` associating to a ticket name the
+        list of every of its descendants, add the ticket ```name``` to
+        every of its ancestor's childs list.
+        """
+        parent = pyticket.utils.get_ticket_parent_name(name)
+        while parent:
+            if parent not in parents:
+                parents[parent] = [name]
+            else:
+                parents[parent].append(name)
+            parent = pyticket.utils.get_ticket_parent_name(parent)
+
+    def generate_tickets(repository, count, gen_child_probability):
+        """Generate ```count``` tickets for the given repository.
+
+        :param repository: the repository for which creating tickets.
+        :param count: the number of tickets to create.
+        :param gen_child_probability: the probability to generate a child
+                                      ticket.
+        :return: a couple (tickets, parents) where :
+                 - tickets is a list of every created ticket names ;
+                 - parents is a map associating to a ticket name every of its
+                   descendants.
+        """
+        taken_names = []
+        parents = {}
+        tickets = []
+        while count > 0:
+            # Generate a ticket name.
+            if taken_names and random.random() <= gen_child_probability:
+                name = generators.gen_child_ticket_name(taken_names)
+            else:
+                name = generators.gen_ticket_name()
+            if name in taken_names:
+                continue
+            taken_names.append(name)
+
+            RepositoryTest.set_ticket_as_child_of_its_ancestors(parents, name)
+
+            status = generators.gen_status()
+            tags = generators.gen_tags()
+            created = random.choice([True, False])
+
+            repository.create_ticket(name, status, tags, created)
+
+            tickets.append(name)
+
+            count = count - 1
+        return (tickets, parents)
+
+    @repeat(10)
+    def test_get_ticket_childs(self):
+        # Create a repository with some parent tickets.
+        r = Repository(self.root, create=True)
+        _, parents = RepositoryTest.generate_tickets(r, 100, 0.1)
+
+        # Check the get_ticket_childs method.
+        for parent, childs in parents.items():
+            returned_childs = [t.name for t in r.get_ticket_childs(parent)]
+            self.assertTrue(set(childs).issuperset(returned_childs))
+
+            returned_childs = [
+                t.name for t in r.get_ticket_childs(parent, recursive=True)
+            ]
+            self.assertFalse(set(childs) - set(returned_childs))
 
 
 if __name__ == "__main__":
