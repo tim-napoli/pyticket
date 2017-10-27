@@ -171,3 +171,15 @@ def get_ticket_last_update_date(directory, ticket):
     return os.path.getmtime(
         "{}/{}/{}".format(get_root_path(), directory, ticket)
     )
+
+def get_ticket_basename(name):
+    """Returns the basename (the name of the ticket minus the name of its
+    parent) of the given ticket name.
+
+    :param name: the ticket name.
+    :return: the ticket's basename.
+    """
+    parent_name = get_ticket_parent_name(name)
+    if parent_name:
+        return name[len(parent_name)+1:]
+    return name

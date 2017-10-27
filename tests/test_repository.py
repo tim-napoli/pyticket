@@ -71,13 +71,12 @@ class RepositoryTest(unittest.TestCase):
             PyticketException, Repository, self.root, create=True
         )
 
-    @repeat(10)
     def test_create_ticket(self):
         r = Repository(self.root, create=True)
 
         taken_names = []
         tickets = []
-        for i in range(0, random.randrange(100)):
+        for i in range(0, random.randrange(1000)):
             if not random.randrange(10):
                 name = generators.gen_child_ticket_name(taken_names)
             else:
@@ -261,11 +260,10 @@ class RepositoryTest(unittest.TestCase):
             count = count - 1
         return (tickets, parents)
 
-    @repeat(10)
     def test_get_ticket_childs(self):
         # Create a repository with some parent tickets.
         r = Repository(self.root, create=True)
-        _, parents = RepositoryTest.generate_tickets(r, 100, 0.1)
+        _, parents = RepositoryTest.generate_tickets(r, 1000, 0.3)
 
         # Check the get_ticket_childs method.
         for parent, childs in parents.items():
@@ -276,6 +274,93 @@ class RepositoryTest(unittest.TestCase):
                 t.name for t in r.get_ticket_childs(parent, recursive=True)
             ]
             self.assertFalse(set(childs) - set(returned_childs))
+
+    def test_rename_ticket(self):
+        def rename_parent(ticket, prev_parent, new_parent):
+            basename = ticket[len(prev_parent)+1:]
+            return new_parent + "." + basename
+
+        def get_renamed_childs_list(tickets, name, new_name):
+            renamed = []
+            for ticket in tickets:
+                if ticket.startswith(name + "."):
+                    new_child_name = rename_parent(ticket, name, new_name)
+                    renamed.append(new_child_name)
+                else:
+                    renamed.append(ticket)
+            return renamed
+
+        def get_renamed_new_names_map(new_names, name, new_name):
+            renamed = {}
+            for candidate_name, candidate_new_name in new_names.items():
+                if candidate_new_name.startswith(name + "."):
+                    new_child_new_name = rename_parent(
+                        candidate_new_name, name, new_name
+                    )
+                    renamed[candidate_name] = new_child_new_name
+                else:
+                    renamed[candidate_name] = candidate_new_name
+            return renamed
+
+        # Create a repository with some parent tickets.
+        r = Repository(self.root, create=True)
+        tickets, parents = RepositoryTest.generate_tickets(r, 1000, 0.3)
+
+        # Renaming some tickets
+        new_names = {}
+        to_rename = random.sample(tickets, random.randrange(len(tickets)))
+        while to_rename:
+            ticket = to_rename.pop(0)
+            if new_names and random.random() < 0.2:
+                parent_name = random.choice(list(new_names.values()))
+            else:
+                parent_name = pyticket.utils.get_ticket_parent_name(ticket)
+            new_name = None
+            while not new_name:
+                new_basename = generators.gen_ticket_name()
+                new_name = (parent_name + "." + new_basename if parent_name
+                            else new_basename)
+                if new_name in tickets:
+                    new_name = None
+            r.rename_ticket(ticket, new_name)
+            new_names[ticket] = new_name
+
+            # Update eventual childs in both collections
+            to_rename = get_renamed_childs_list(to_rename, ticket, new_name)
+            new_names = get_renamed_new_names_map(new_names, ticket, new_name)
+
+        # Checking all is right
+        for prev_name, new_name in new_names.items():
+            # Check we have no more previous name
+            self.assertFalse(r.has_ticket(prev_name))
+            # Check we have new name
+            self.assertTrue(r.has_ticket(new_name))
+            # If the tickets had childs, check childs are correctly renamed
+            # too
+            if prev_name not in parents:
+                continue
+            for child in parents[prev_name]:
+                self.assertFalse(r.has_ticket(child))
+
+    def test_rename_ticket_unknown_name(self):
+        r = Repository(self.root, create=True)
+        self.assertRaises(
+            PyticketException, r.rename_ticket, "blectre", "new-blectre"
+        )
+
+    def test_rename_ticket_invalid_name(self):
+        r = Repository(self.root, create=True)
+        r.create_ticket("blectre", "opened", [])
+        self.assertRaises(
+            PyticketException, r.rename_ticket, "blectre", "new-bl£$`ectre"
+        )
+
+    def test_rename_ticket_invalid_new_parent(self):
+        r = Repository(self.root, create=True)
+        r.create_ticket("blectre", "opened", [])
+        self.assertRaises(
+            PyticketException, r.rename_ticket, "blectre", "parent.blectre"
+        )
 
 
 if __name__ == "__main__":

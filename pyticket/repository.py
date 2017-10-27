@@ -272,3 +272,43 @@ class Repository:
         ticket = self.get_ticket(name)
         ticket.status = status
         self.write_tickets_file()
+
+    def rename_ticket(self, name, new_name):
+        """Rename a ticket.
+
+        If the ticket has a content, also rename its content file.
+
+        If the ticket has childs, also rename its childs.
+
+        :param name: the name of the ticket to rename.
+        :param new_name: the new ticket name.
+        :raises PyticketException: if the given ticket cannot be found, if
+                                   the new ticket's name is invalid, or if the
+                                   new ticket's requested parent doesn't exist.
+        """
+        if not MetaTicket.is_valid_name(new_name):
+            raise PyticketException(
+                "'{}' is not a valid ticket name".format(new_name)
+            )
+        parent_name = utils.get_ticket_parent_name(new_name)
+        if parent_name and not self.has_ticket(parent_name):
+            raise PyticketException(
+                ("requests new parent '{}' for ticket '{}', but this parent "
+                 "doesn't exist (new name is '{}')").format(parent_name, name,
+                                                            new_name)
+            )
+
+        # Rename the ticket
+        ticket = self.get_ticket(name)
+        ticket.name = new_name
+        self.tickets[new_name] = self.tickets.pop(name)
+
+        # Rename childs
+        childs = self.get_ticket_childs(name)
+        for child in childs:
+            child_basename = utils.get_ticket_basename(child.name)
+            child_new_name = new_name + '.' + child_basename
+            self.rename_ticket(child.name, child_new_name)
+
+        # Update tickets file
+        self.write_tickets_file()
