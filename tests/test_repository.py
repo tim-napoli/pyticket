@@ -138,7 +138,7 @@ class RepositoryTest(unittest.TestCase):
         r = Repository(self.root, create=True)
 
         name = generators.gen_ticket_name()
-        status = random.choice(["opened", "closed"])
+        status = generators.gen_status()
         tags = generators.gen_tags()
 
         r.create_ticket(name, status, tags)
@@ -166,6 +166,47 @@ class RepositoryTest(unittest.TestCase):
         r.create_ticket("test", "opened", [])
         self.assertRaises(
             PyticketException, r.read_ticket_content, "test"
+        )
+
+    @repeat(100)
+    def test_switch_ticket_status(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+
+        new_status = generators.gen_status()
+        r.switch_ticket_status(name, new_status)
+        self.assertEqual(r.get_ticket(name).status, new_status)
+
+        # Reload repository and tickets file
+        r = Repository(self.root)
+        self.assertEqual(r.get_ticket(name).status, new_status)
+
+    def test_switch_ticket_status_invalid_status(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+
+        self.assertRaises(
+            PyticketException, r.switch_ticket_status, name, "blectre"
+        )
+
+    def test_switch_ticket_status_invalid_name(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+
+        self.assertRaises(
+            PyticketException, r.switch_ticket_status, name + "x", status
         )
 
 

@@ -236,3 +236,22 @@ class Repository:
         path = self.get_ticket_content_path(name)
         with open(path, "r") as f:
             return f.read()
+
+    def switch_ticket_status(self, name, status):
+        """Switch the status of the given ticket.
+
+        This is dumb since status is now a meta-data. We don't need more
+        than one content folder.
+
+        :param name: the ticket name.
+        :param status: the new status of the ticket.
+        :raises PyticketException: if the ticket doesn't exist or ```status```
+                                   is invalid.
+        """
+        if status not in MetaTicket.VALID_STATUS:
+            raise PyticketException(
+                "'{}' is not a valid status".format(status)
+            )
+        ticket = self.get_ticket(name)
+        ticket.status = status
+        self.write_tickets_file()
