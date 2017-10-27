@@ -1,4 +1,6 @@
 """This module contains utility functions to write tests."""
+import os
+import tempfile
 
 
 def repeat(count):
@@ -34,3 +36,10 @@ def read_file_content(path):
     """
     with open(path, "r") as f:
         return f.read()
+
+
+def get_test_root_dir():
+    if "PYTICKET_TEST_TMP_DIR" in os.environ:
+        return os.environ["PYTICKET_TEST_TMP_DIR"] + "/pyticket-test"
+    else:
+        return tempfile.mkdtemp("pyticket")

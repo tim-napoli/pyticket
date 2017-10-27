@@ -18,8 +18,8 @@ from tests.utils import repeat
 class RepositoryTest(unittest.TestCase):
 
     def setUp(self):
+        self.root = utils.get_test_root_dir()
         self.maxDiff = None
-        self.root = "/tmp/pyticket-test"
         if os.path.isdir(self.root):
             shutil.rmtree(self.root)
         os.mkdir(self.root)

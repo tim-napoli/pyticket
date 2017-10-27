@@ -9,13 +9,14 @@ from pyticket import migrations
 from pyticket.ticket import MetaTicket
 
 from tests import generators
+from tests import utils
 from tests.utils import repeat
 
 
 class MigrationsTest(unittest.TestCase):
 
     def setUp(self):
-        self.directory = "/tmp/pyticket-test"
+        self.directory = utils.get_test_root_dir()
         if os.path.isdir(self.directory):
             shutil.rmtree(self.directory)
         os.makedirs(self.directory)
