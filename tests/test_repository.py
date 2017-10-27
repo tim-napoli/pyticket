@@ -209,6 +209,7 @@ class RepositoryTest(unittest.TestCase):
             PyticketException, r.switch_ticket_status, name + "x", status
         )
 
+    @staticmethod
     def set_ticket_as_child_of_its_ancestors(parents, name):
         """Given a map ```parents``` associating to a ticket name the
         list of every of its descendants, add the ticket ```name``` to
@@ -222,6 +223,7 @@ class RepositoryTest(unittest.TestCase):
                 parents[parent].append(name)
             parent = pyticket.utils.get_ticket_parent_name(parent)
 
+    @staticmethod
     def generate_tickets(repository, count, gen_child_probability):
         """Generate ```count``` tickets for the given repository.
 
@@ -361,6 +363,42 @@ class RepositoryTest(unittest.TestCase):
         self.assertRaises(
             PyticketException, r.rename_ticket, "blectre", "parent.blectre"
         )
+
+    def test_delete_ticket(self):
+        def removed_ticket_childs(tickets, to_delete, name):
+            remaining = []
+            deleted = []
+            for ticket in tickets:
+                if ticket.startswith(name + "."):
+                    deleted.append(ticket)
+            for ticket in to_delete:
+                if not ticket.startswith(name + "."):
+                    remaining.append(ticket)
+            return (remaining, deleted)
+
+        r = Repository(self.root, create=True)
+        tickets, parents = RepositoryTest.generate_tickets(r, 500, 0.3)
+
+        deleted = []
+        to_delete = random.sample(tickets, random.randrange(len(tickets)))
+        while to_delete:
+            ticket = to_delete.pop(0)
+            r.delete_ticket(ticket)
+            to_delete, rec_deleted = removed_ticket_childs(
+                tickets, to_delete, ticket
+            )
+            deleted.append(ticket)
+            deleted += rec_deleted
+
+        for ticket in deleted:
+            self.assertFalse(r.has_ticket(ticket))
+        for ticket in tickets:
+            if ticket not in deleted:
+                self.assertTrue(r.has_ticket(ticket))
+
+    def test_delete_ticket_invalid_name(self):
+        r = Repository(self.root, create=True)
+        self.assertRaises(PyticketException, r.delete_ticket, "blectre")
 
 
 if __name__ == "__main__":

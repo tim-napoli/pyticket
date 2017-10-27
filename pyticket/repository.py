@@ -312,3 +312,27 @@ class Repository:
 
         # Update tickets file
         self.write_tickets_file()
+
+    def delete_ticket(self, name):
+        """Delete the given ticket and its childs.
+
+        :param name: the name of the ticket to delete.
+        :raises PyticketException: the requested ticket doesn't exist.
+        """
+        if not self.has_ticket(name):
+            raise PyticketException("ticket '{}' doesn't exist".format(name))
+
+        # Delete childs
+        childs = self.get_ticket_childs(name)
+        for child in childs:
+            self.delete_ticket(child.name)
+
+        # Delete ticket content
+        if self.has_ticket_content(name):
+            os.remove(self.get_ticket_content_path(name))
+
+        # Remove the ticket from the list
+        self.tickets.pop(name)
+
+        # Write list.
+        self.write_tickets_file()
