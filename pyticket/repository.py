@@ -366,3 +366,16 @@ class Repository:
             if tag not in ticket.tags:
                 ticket.tags.append(tag)
         self.write_tickets_file()
+
+    def remove_tags(self, name, tags):
+        """Remove tags from the given ticket.
+
+        :param name: the ticket name to which removing tags.
+        :param tags: the tags to remove.
+        :raise PyticketException: the given ticket doesn't exist.
+        """
+        ticket = self.get_ticket(name)
+        for tag in tags:
+            if tag in ticket.tags:
+                ticket.tags.remove(tag)
+        self.write_tickets_file()

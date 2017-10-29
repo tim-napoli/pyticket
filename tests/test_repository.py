@@ -466,6 +466,42 @@ class RepositoryTest(unittest.TestCase):
         new_tags = generators.gen_tags()
         self.assertRaises(PyticketException, r.add_tags, "cocorico", new_tags)
 
+    @repeat(100)
+    def test_remove_tags(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = generators.gen_status()
+        tags = None
+        while not tags:
+            tags = generators.gen_tags()
+
+        r.create_ticket(name, status, tags)
+
+        removed_tags = random.sample(tags, random.randrange(len(tags)))
+        r.remove_tags(name, removed_tags)
+
+        ticket = r.get_ticket(name)
+        for tag in tags:
+            if tag not in removed_tags:
+                self.assertTrue(tag in ticket.tags)
+            else:
+                self.assertFalse(tag not in ticket.tags)
+
+    def test_remove_tags_invalid_name(self):
+        r = Repository(self.root, create=True)
+
+        name = "blectre"
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+
+        r.create_ticket(name, status, tags)
+
+        new_tags = generators.gen_tags()
+        self.assertRaises(
+            PyticketException, r.remove_tags, "cocorico", new_tags
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
