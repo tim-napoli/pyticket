@@ -353,3 +353,16 @@ class Repository:
 
         # Write list.
         self.write_tickets_file()
+
+    def add_tags(self, name, tags):
+        """Add tags to the given ticket.
+
+        :param name: the ticket name to which adding tags.
+        :param tags: tags to add to the ticket.
+        :raise PyticketException: the given ticket doesn't exist.
+        """
+        ticket = self.get_ticket(name)
+        for tag in tags:
+            if tag not in ticket.tags:
+                ticket.tags.append(tag)
+        self.write_tickets_file()

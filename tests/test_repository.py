@@ -435,6 +435,37 @@ class RepositoryTest(unittest.TestCase):
         r = Repository(self.root, create=True)
         self.assertRaises(PyticketException, r.delete_ticket, "blectre")
 
+    @repeat(100)
+    def test_add_tags(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+
+        r.create_ticket(name, status, tags)
+
+        new_tags = generators.gen_tags()
+        r.add_tags(name, new_tags)
+
+        ticket = r.get_ticket(name)
+        for tag in new_tags:
+            self.assertTrue(tag in ticket.tags)
+        for tag in ticket.tags:
+            self.assertTrue(tag in tags or tag in new_tags)
+
+    def test_add_tags_invalid_name(self):
+        r = Repository(self.root, create=True)
+
+        name = "blectre"
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+
+        r.create_ticket(name, status, tags)
+
+        new_tags = generators.gen_tags()
+        self.assertRaises(PyticketException, r.add_tags, "cocorico", new_tags)
+
 
 if __name__ == "__main__":
     unittest.main()
