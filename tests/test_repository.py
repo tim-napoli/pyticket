@@ -542,6 +542,14 @@ class RepositoryTest(unittest.TestCase):
         r.create_ticket(name, status, tags)
         self.assertRaises(PyticketException, r.list_tickets, status="cocorico")
 
+    def test_expand_template(self):
+        r = Repository(self.root, create=True)
+        r.expand_template("feature", {})
+
+    def test_expand_template_invalid_name(self):
+        r = Repository(self.root, create=True)
+        self.assertRaises(PyticketException, r.expand_template, "blectre", {})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 import os
 import os.path
+from string import Template
 
 from pyticket import PyticketException
 from pyticket import migrations
@@ -407,3 +408,19 @@ class Repository:
         if tags:
             tickets = [t for t in tickets if not set(tags) - set(t.tags)]
         return tickets
+
+    def expand_template(self, template_name, values):
+        """Expand the given template with the given values.
+
+        :param template_name: the name of the template to expand.
+        :param values: values used to expand the template.
+        :return: the expanded template.
+        """
+        path = "{}/{}".format(self.templates, template_name)
+        if not os.path.isfile(path):
+            raise PyticketException(
+                "template '{}' doesn't exist".format(template_name)
+            )
+        with open(path, 'r') as f:
+            content = Template(f.read())
+            return content.safe_substitute(**values)
