@@ -379,3 +379,31 @@ class Repository:
             if tag in ticket.tags:
                 ticket.tags.remove(tag)
         self.write_tickets_file()
+
+    def list_tickets(self, root=None, status=None, tags=None):
+        """List tickets using filters.
+
+        :param root: if given, list the given 'root' ticket and all of its
+                     childs.
+        :param status: if given, list only tickets with this status.
+        :param tags: filter tickets having given tags.
+        :return: the list of tickets matching filters.
+        :raises PyticketException: the 'root' ticket doesn't exist or 'status'
+                                   is invalid.
+        """
+        if root and not self.has_ticket(root):
+            raise PyticketException(
+                "ticket '{}' doesn't exist".format(root)
+            )
+        if status and not MetaTicket.is_valid_status(status):
+            raise PyticketException(
+                "'{}' is an invalid status".format(status)
+            )
+
+        tickets = (list(self.tickets.values()) if not root
+                   else self.get_ticket_childs(root, recursive=True))
+        if status:
+            tickets = [t for t in tickets if t.status == status]
+        if tags:
+            tickets = [t for t in tickets if not set(tags) - set(t.tags)]
+        return tickets

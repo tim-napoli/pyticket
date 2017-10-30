@@ -502,6 +502,46 @@ class RepositoryTest(unittest.TestCase):
             PyticketException, r.remove_tags, "cocorico", new_tags
         )
 
+    def test_list(self):
+        r = Repository(self.root, create=True)
+        tickets, parents = RepositoryTest.generate_tickets(r, 500, 0.3)
+
+        self.assertEqual(len(r.list_tickets()), len(tickets))
+
+        # Testing status filter
+        for status in MetaTicket.VALID_STATUS:
+            listed = set(r.list_tickets(status=status))
+            in_repo = set([t for t in list(r.tickets.values())
+                          if t.status == status])
+            self.assertEqual(listed, in_repo)
+
+        # Testing tags filter
+        for ticket in list(r.tickets.values()):
+            listed = r.list_tickets(tags=ticket.tags)
+            self.assertTrue(ticket in listed)
+
+        # Testing root filter
+        for parent in parents:
+            listed = set([t.name for t in (r.list_tickets(root=parent))])
+            self.assertEqual(set(parents[parent]).intersection(listed),
+                             listed)
+
+    def test_list_invalid_root(self):
+        r = Repository(self.root, create=True)
+        name = "blectre"
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+        self.assertRaises(PyticketException, r.list_tickets, root="cocorico")
+
+    def test_list_invalid_status(self):
+        r = Repository(self.root, create=True)
+        name = "blectre"
+        status = generators.gen_status()
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+        self.assertRaises(PyticketException, r.list_tickets, status="cocorico")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,6 +28,9 @@ class MetaTicket:
                 self.status == other.status and
                 self.tags == other.tags)
 
+    def __hash__(self):
+        return hash(self.name)
+
     @staticmethod
     def parse(line):
         """Parse a pyticket line."""
