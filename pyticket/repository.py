@@ -170,6 +170,50 @@ class Repository:
                     childs += self.get_ticket_childs(candidate_key, recursive)
         return childs
 
+    def set_working_ticket(self, name):
+        """Set the given ticket as the working ticket.
+
+        :param name: the ticket name to set as working one.
+        :raises PyticketException: the given ticket doesn't exist or it is
+                                   closed.
+        """
+        if name:
+            if not self.has_ticket(name):
+                raise PyticketException(
+                    "ticket '{}' doesn't exist".format(name)
+                )
+
+            ticket = self.get_ticket(name)
+            if ticket.status == "closed":
+                raise PyticketException("'{}' is a closed ticket".format(name))
+        else:
+            name = ""
+
+        with open(self.repository + "/working", "w+") as f:
+            f.write(name)
+
+    def is_working_ticket(self, name):
+        """Check if the given ticket is the working ticket.
+
+        :param name: the ticket name to check.
+        :return: return ```True``` if the given ticket is the working ticket.
+        """
+        with open(self.repository + "/working", "r") as f:
+            content = f.read()
+            return content == name
+
+    def get_working_ticket(self):
+        """Get the current working ticket.
+
+        :return: The current working ticket or None if this ticket doesn't
+                 exist.
+        """
+        with open(self.repository + "/working", "r") as f:
+            content = f.read()
+            if not content:
+                return None
+            return self.tickets[content]
+
     def create_ticket(self, name, status, tags, create=False):
         """Create a new ticket in the repository.
 
@@ -261,6 +305,9 @@ class Repository:
         If reopening a closed ticket, every of its parents will be reopened
         too.
 
+        If closing the working ticket, this ticket will no more be the
+        working ticket.
+
         :param name: the ticket name.
         :param status: the new status of the ticket.
         :raises PyticketException: if the ticket doesn't exist or ```status```
@@ -280,6 +327,8 @@ class Repository:
                         "trying to close '{}', but its child '{}' is opened"
                         .format(name, child.name)
                     )
+            if self.is_working_ticket(name):
+                self.set_working_ticket(None)
 
         ticket = self.get_ticket(name)
         if status == "opened" and ticket.status == "closed":
@@ -328,6 +377,10 @@ class Repository:
             child_new_name = new_name + '.' + child_basename
             self.rename_ticket(child.name, child_new_name)
 
+        # Update working ticket
+        if self.is_working_ticket(name):
+            self.set_working_ticket(new_name)
+
         # Update tickets file
         self.write_tickets_file()
 
@@ -351,6 +404,10 @@ class Repository:
 
         # Remove the ticket from the list
         self.tickets.pop(name)
+
+        # Reset working ticket
+        if self.is_working_ticket(name):
+            self.set_working_ticket(None)
 
         # Write list.
         self.write_tickets_file()

@@ -226,6 +226,18 @@ class RepositoryTest(unittest.TestCase):
             PyticketException, r.switch_ticket_status, name, "closed"
         )
 
+    def test_closing_working_ticket(self):
+        r = Repository(self.root, create=True)
+
+        name = generators.gen_ticket_name()
+        status = "opened"
+        tags = generators.gen_tags()
+        r.create_ticket(name, status, tags)
+        r.set_working_ticket(name)
+
+        r.switch_ticket_status(name, "closed")
+        self.assertFalse(r.get_working_ticket())
+
     @repeat(10)
     def test_switch_ticket_status_reopening_parents(self):
         r = Repository(self.root, create=True)
@@ -549,6 +561,24 @@ class RepositoryTest(unittest.TestCase):
     def test_expand_template_invalid_name(self):
         r = Repository(self.root, create=True)
         self.assertRaises(PyticketException, r.expand_template, "blectre", {})
+
+    def test_working_ticket(self):
+        r = Repository(self.root, create=True)
+        tickets, _ = RepositoryTest.generate_tickets(r, 100, 0.3)
+
+        ticket = random.choice(tickets)
+        self.assertFalse(r.is_working_ticket(ticket))
+        self.assertEqual(r.get_working_ticket(), None)
+
+        for ticket in tickets:
+            r.get_ticket(ticket).status = "opened"
+            r.set_working_ticket(ticket)
+            self.assertTrue(r.is_working_ticket(ticket))
+            self.assertEqual(r.get_working_ticket().name, ticket)
+
+    def test_working_ticket_invalid_name(self):
+        r = Repository(self.root, create=True)
+        self.assertRaises(PyticketException, r.set_working_ticket, "blectre")
 
 
 if __name__ == "__main__":
