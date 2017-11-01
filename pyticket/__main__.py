@@ -9,68 +9,60 @@ from pyticket import migrations as migrations
 from pyticket.command import (
     command, argument, print_usage, execute_argv, option
 )
-from pyticket.commands.init import init
-from pyticket.commands.configure import configure
-from pyticket.commands.tickets import (
-    create_ticket, edit_ticket, show_ticket, list_tickets_command,
-    close_ticket, reopen_ticket, delete_ticket, rename_ticket, works_on,
-    release
-)
-from pyticket.commands.tags import add_tag, remove_tag
-from pyticket.commands.table import table
+from pyticket import commands as commands
 
 COMMANDS = [
     command(
         "init",
         "Initialize a pyticket repository",
-        init
+        commands.init
     ),
     command(
         "configure",
         "Configure the pyticket repository",
-        configure
+        commands.configure
     ),
     command(
         "create",
         "Create a new ticket",
-        create_ticket,
+        commands.create_ticket,
         [ option("no-edit", "don't edit the created ticket", False) ]
     ),
     command(
         "edit",
         "Edit an existing ticket",
-        edit_ticket
+        commands.edit_ticket
     ),
     command(
         "delete",
         "Delete an existing ticket",
-        delete_ticket,
+        commands.delete_ticket,
         [ option("force", "don't ask for confirmation", False) ]
     ),
     command(
         "rename",
         "Rename a ticket",
-        rename_ticket
+        commands.rename_ticket
     ),
     command(
         "close",
         "Close an opened ticket",
-        close_ticket
+        commands.close_ticket
     ),
     command(
         "reopen",
         "Reopen a closed ticket",
-        reopen_ticket
+        commands.reopen_ticket
     ),
     command(
         "show",
         "Show an existing ticket",
-        show_ticket
+        commands.show_ticket
     ),
     command(
         "list",
         "List tickets using criteria",
-        list_tickets_command,
+        commands.list_tickets,
         [ option("opened", "only list opened tickets", False)
         , option("closed", "only list closed tickets", False)
         , option("tags",
@@ -82,27 +74,27 @@ COMMANDS = [
     command(
         "add-tag",
         "Add a tag to the given ticket",
-        add_tag
+        commands.add_tag
     ),
     command(
         "remove-tag",
         "Remove a tag from the given ticket",
-        remove_tag
+        commands.remove_tag
     ),
     command(
         "works-on",
         "Set the current working ticket",
-        works_on
+        commands.works_on
     ),
     command(
         "release",
         "Release the working ticket",
-        release
+        commands.release
     ),
     command(
         "table",
         "Show tickets in a table",
-        table,
+        commands.table,
         [ option("sorted-name", "Sort the table with ticket names", False),
           option("count", "Number of tickets to show", True),
           option("opened", "Show opened tickets", False),
@@ -135,9 +127,6 @@ def main(args=[]):
     if cmd not in extern_commands and not utils.is_pyticket_repository():
         print('pyticket: current directory is not a pyticket repository.')
         sys.exit(1)
-
-    if utils.is_pyticket_repository():
-        migrations.apply_migrations()
 
     try:
         execute_argv(COMMANDS, args)
