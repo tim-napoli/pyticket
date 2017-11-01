@@ -4,8 +4,9 @@ import os
 
 from tests import (
     test_configuration, test_generators, test_migrations, test_repository,
-    test_ticket
+    test_ticket, test_command_tickets
 )
+
 
 def suite():
     loader = unittest.TestLoader()
@@ -15,7 +16,10 @@ def suite():
     suite.addTests(loader.loadTestsFromModule(test_migrations))
     suite.addTests(loader.loadTestsFromModule(test_repository))
     suite.addTests(loader.loadTestsFromModule(test_ticket))
+    suite.addTests(loader.loadTestsFromModule(test_ticket))
+    suite.addTests(loader.loadTestsFromModule(test_command_tickets))
     return suite
+
 
 if __name__ == "__main__":
     sys.stdout = open(os.devnull, 'w')
