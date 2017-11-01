@@ -1,10 +1,10 @@
 _find_opened_tickets() {
-    local tickets=`ls .pyticket/opened`
+    local tickets=`cat .pyticket/tickets | grep opened | cut -d " " -f 1`
     echo "$tickets"
 }
 
 _find_closed_tickets() {
-    local tickets=`ls .pyticket/closed`
+    local tickets=`cat .pyticket/tickets | grep closed | cut -d " " -f 1`
     echo "$tickets"
 }
 

@@ -4,6 +4,7 @@ Command line management.
 import inspect
 from pyticket import PyticketException
 
+
 class argument:
     def __init__(self, name, description, optional):
         self.name = name
@@ -14,6 +15,7 @@ class argument:
         print("        {} {} {}".format(
             self.name, "(optional)" if self.optional else "", self.description
         ))
+
 
 class option:
     def __init__(self, name, description, has_arg):
@@ -26,8 +28,9 @@ class option:
             self.name, "<arg>" if self.has_arg else "", self.description
         ))
 
+
 class command:
-    def __init__(self, name, description, callback = None, options = []):
+    def __init__(self, name, description, callback=None, options=[]):
         self.name = name
         self.description = description
         self.callback = callback
@@ -41,16 +44,15 @@ class command:
         args = []
         for arg in parameters.items():
             arg = arg[1]
-            if not arg.name in annotations:
+            if arg.name not in annotations:
                 continue
             doc = annotations[arg.name]
-            if (arg.default != inspect._empty
-                    and arg.default != None):
+            if arg.default != inspect._empty and arg.default:
                 raise PyticketException(
                     "only 'None' default parameter value is authorized for "
                     "commands callbacks"
                 )
-            optional = arg.default == None
+            optional = True if not arg.default else False
             args += [argument(arg.name, doc, optional)]
         return args
 
@@ -93,7 +95,7 @@ class command:
     def try_execute(self, argv):
         if argv[0] != self.name:
             return False
-        if self.callback == None:
+        if not self.callback:
             raise PyticketException(
                 "command '{}' is not implemented".format(self.name)
             )
@@ -138,9 +140,9 @@ def print_usage(prg_name, commands):
         print("")
         cmd.usage()
 
+
 def execute_argv(commands, argv):
     for cmd in commands:
         if cmd.try_execute(argv):
             return
     raise PyticketException("command '{}' is not valid".format(argv[0]))
-
