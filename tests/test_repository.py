@@ -535,8 +535,9 @@ class RepositoryTest(unittest.TestCase):
         # Testing root filter
         for parent in parents:
             listed = set([t.name for t in (r.list_tickets(root=parent))])
-            self.assertEqual(set(parents[parent]).intersection(listed),
-                             listed)
+            self.assertEqual(
+                set(parents[parent] + [parent]).intersection(listed), listed
+            )
 
     def test_list_invalid_root(self):
         r = Repository(self.root, create=True)

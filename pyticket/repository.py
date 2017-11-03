@@ -460,6 +460,9 @@ class Repository:
 
         tickets = (list(self.tickets.values()) if not root
                    else self.get_ticket_childs(root, recursive=True))
+        if root:
+            tickets.append(self.get_ticket(root))
+
         if status:
             tickets = [t for t in tickets if t.status == status]
         if tags:
