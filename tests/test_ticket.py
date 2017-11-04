@@ -14,12 +14,15 @@ class MetaTicketTest(unittest.TestCase):
         set(string.printable) - set(MetaTicket.VALID_NAME_CHARSET)
     )
 
+    def setUp(self):
+        self.maxDiff = None
+
     @repeat(1000)
     def test_to_string(self):
         meta_ticket = generators.gen_meta_ticket()
-        expected = "{name} {status} ({tags})".format(
+        expected = "{name} {status} ({tags}) {mtime}".format(
             name=meta_ticket.name, status=meta_ticket.status,
-            tags=",".join(meta_ticket.tags)
+            tags=",".join(meta_ticket.tags), mtime=meta_ticket.mtime
         )
         self.assertEqual(meta_ticket.to_string(), expected)
 
@@ -28,11 +31,13 @@ class MetaTicketTest(unittest.TestCase):
         name = generators.gen_ticket_name()
         status = generators.gen_status()
         tags = generators.gen_tags()
-        line = "{} {} ({})".format(name, status, ",".join(tags))
+        mtime = generators.gen_time()
+        line = "{} {} ({}) {}".format(name, status, ",".join(tags), mtime)
         meta_ticket = MetaTicket.parse(line)
         self.assertEqual(meta_ticket.name, name)
         self.assertEqual(meta_ticket.status, status)
         self.assertEqual(meta_ticket.tags, tags)
+        self.assertEqual(meta_ticket.mtime, mtime)
 
     def test_parse_invalid_count(self):
         line = "invalid_name opened (x,y,z) 32"
@@ -51,7 +56,14 @@ class MetaTicketTest(unittest.TestCase):
 
     @repeat(1000)
     def test_parse_invalid_tags(self):
-        line = "a-ticket invalid-status (x,{},z)".format(
+        line = "a-ticket opened (x,{},z)".format(
+            MetaTicketTest.INVALID_CHARACTERS
+        )
+        self.assertRaises(PyticketException, MetaTicket.parse, line)
+
+    @repeat(1000)
+    def test_parse_invalid_mtime(self):
+        line = "a-ticket opened (x,y,z) blectre".format(
             MetaTicketTest.INVALID_CHARACTERS
         )
         self.assertRaises(PyticketException, MetaTicket.parse, line)

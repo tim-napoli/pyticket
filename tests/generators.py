@@ -1,6 +1,7 @@
 """Various generators to do random testing on pyticket."""
 import random
 import string
+import time
 
 from pyticket.ticket import MetaTicket
 from pyticket.configuration import Configuration
@@ -45,12 +46,18 @@ def gen_status():
     return random.choice(MetaTicket.VALID_STATUS)
 
 
+def gen_time():
+    """Generate a time value."""
+    return random.uniform(0.0, time.time())
+
+
 def gen_meta_ticket():
     """Generate a valid MetaTicket."""
     name = gen_ticket_name()
     status = gen_status()
     tags = gen_tags()
-    return MetaTicket(name, status, tags)
+    mtime = gen_time()
+    return MetaTicket(name, status, tags, mtime)
 
 
 def gen_ticket_content():

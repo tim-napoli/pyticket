@@ -85,6 +85,41 @@ class MigrationsTest(unittest.TestCase):
                     self.directory + "/contents/" + meta_ticket.name
                 ))
 
+    def test_mtime_migration(self):
+        os.mkdir(self.directory + "/contents")
+
+        # Generate some tickets.
+        tickets = {}
+        with open(self.directory + "/tickets", "w+") as f:
+            for i in range(0, 100):
+                name = generators.gen_ticket_name()
+                status = generators.gen_status()
+                tags = generators.gen_tags()
+                mtime = None
+                if random.choice([True, False]):
+                    content = generators.gen_ticket_content()
+                    path = "{}/contents/{}".format(self.directory, name)
+                    with open(path, "w+") as f_content:
+                        f_content.write(content)
+                        mtime = os.path.getmtime(path)
+                f.write("{} {} ({})\n".format(name, status, ",".join(tags)))
+                tickets[name] = (status, tags, mtime)
+
+        # Apply migration
+        migrations.tickets_mtime_migration(self.directory)
+
+        # Tests
+        with open(self.directory + "/tickets", "r") as f:
+            lines = f.read().splitlines()
+            self.assertEqual(len(lines), len(tickets))
+            for line in lines:
+                ticket = MetaTicket.parse(line)
+            self.assertTrue(ticket.name in tickets)
+            self.assertEqual(ticket.status, tickets[ticket.name][0])
+            self.assertEqual(ticket.tags, tickets[ticket.name][1])
+            if tickets[ticket.name][2]:
+                self.assertEqual(ticket.mtime, tickets[ticket.name][2])
+
 
 if __name__ == "__main__":
     unittest.main()

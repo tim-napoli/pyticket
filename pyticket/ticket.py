@@ -12,15 +12,17 @@ class MetaTicket:
 
     VALID_STATUS = ["opened", "closed"]
 
-    def __init__(self, name, status, tags):
+    def __init__(self, name, status, tags, mtime=0.0):
         self.name = name
         self.status = status
         self.tags = tags
+        self.mtime = mtime
 
     def to_string(self):
         """Return the ticket string as found in the meta-tickets file."""
-        return "{name} {status} ({tags})".format(
-            name=self.name, status=self.status, tags=",".join(self.tags)
+        return "{name} {status} ({tags}) {mtime}".format(
+            name=self.name, status=self.status, tags=",".join(self.tags),
+            mtime=self.mtime
         )
 
     def __eq__(self, other):
@@ -53,6 +55,7 @@ class MetaTicket:
         TAGS_PATTERN = r"\((?P<tags>[{name},]*)\)".format(
             name=MetaTicket.VALID_NAME_CHARSET
         )
+        MTIME_PATTERN = r"(?P<mtime>\d+(?:\.\d*))"
 
         if not re.match(NAME_PATTERN, split[0]):
             raise PyticketException(
@@ -66,8 +69,14 @@ class MetaTicket:
             raise PyticketException(
                 "'{}' is not a valid tags string".format(split[2])
             )
+        if not re.match(MTIME_PATTERN, split[3]):
+            raise PyticketException(
+                "'{}' is not a valid modification time string".format(split[3])
+            )
 
-        PATTERN = "{} {} {}".format(NAME_PATTERN, STATUS_PATTERN, TAGS_PATTERN)
+        PATTERN = "{} {} {} {}".format(
+            NAME_PATTERN, STATUS_PATTERN, TAGS_PATTERN, MTIME_PATTERN
+        )
         matches = re.match(PATTERN, line)
         if not matches:
             raise PyticketException(
@@ -78,13 +87,14 @@ class MetaTicket:
         status = matches.group("status")
         tags_str = matches.group("tags")
         tags = tags_str.split(",") if tags_str else []
+        mtime = float(matches.group("mtime"))
         for tag in tags:
             if not MetaTicket.is_valid_tag_name(tag):
                 raise PyticketException(
                     "'{}' is not a valid tag name".format(tag)
                 )
 
-        return MetaTicket(name, status, tags)
+        return MetaTicket(name, status, tags, mtime)
 
     @staticmethod
     def is_valid_name(name):

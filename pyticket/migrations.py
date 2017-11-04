@@ -1,5 +1,6 @@
 import shutil
 import os.path
+import time
 
 from pyticket.ticket import MetaTicket
 
@@ -48,9 +49,29 @@ def tickets_meta_files_migration(directory):
             f.write(meta_ticket.to_string() + "\n")
 
 
+def tickets_mtime_migration(directory):
+    print("Applying mtime migration")
+    lines = []
+    with open(directory + "/tickets", "r") as f:
+        lines = f.read().splitlines()
+    new_lines = []
+    for line in lines:
+        split = line.split()
+        name = split[0]
+        content_path = "{}/contents/{}".format(directory, name)
+        mtime = time.time()
+        if os.path.isfile(content_path):
+            mtime = os.path.getmtime(content_path)
+        new_lines.append("{} {}".format(line, mtime))
+    with open(directory + "/tickets", "w+") as f:
+        for line in new_lines:
+            f.write("{}\n".format(line))
+
+
 MIGRATIONS = [
     working_ticket_migration,
     tickets_meta_files_migration,
+    tickets_mtime_migration,
 ]
 
 
