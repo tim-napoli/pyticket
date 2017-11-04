@@ -38,6 +38,7 @@ def edit_ticket(argv, ticket_name: "The ticket name"):
     subprocess.call([
         config.values["editor"], r.get_ticket_content_path(ticket_name)
     ])
+    r.update_ticket_mtime(ticket_name)
 
 
 def show_ticket(options, ticket_name: "The ticket name"):

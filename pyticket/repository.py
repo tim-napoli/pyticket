@@ -1,5 +1,6 @@
 import os
 import os.path
+import time
 from string import Template
 
 from pyticket import PyticketException
@@ -214,6 +215,16 @@ class Repository:
                 return None
             return self.tickets[content]
 
+    def update_ticket_mtime(self, name):
+        """Update the mtime of the given ticket to the current time.
+
+        :param name: the ticket name.
+        :raises PyticketException: the ticket doesn't exist.
+        """
+        ticket = self.get_ticket(name)
+        ticket.mtime = time.time()
+        self.write_tickets_file()
+
     def create_ticket(self, name, status, tags, create=False):
         """Create a new ticket in the repository.
 
@@ -266,7 +277,7 @@ class Repository:
                     "'{}' is not a valid tag name".format(tag)
                 )
 
-        meta_ticket = MetaTicket(name, status, tags)
+        meta_ticket = MetaTicket(name, status, tags, time.time())
         self.tickets[meta_ticket.name] = meta_ticket
         self.write_tickets_file()
 
@@ -283,6 +294,7 @@ class Repository:
         path = self.get_ticket_content_path(name)
         with open(path, "w+") as f:
             f.write(content)
+        self.update_ticket_mtime(name)
 
     def read_ticket_content(self, name):
         """Read the ticket content of the given ticket.
@@ -339,6 +351,7 @@ class Repository:
                 parent_name = utils.get_ticket_parent_name(parent_name)
         ticket.status = status
         self.write_tickets_file()
+        self.update_ticket_mtime(name)
 
     def rename_ticket(self, name, new_name):
         """Rename a ticket.
@@ -383,6 +396,7 @@ class Repository:
 
         # Update tickets file
         self.write_tickets_file()
+        self.update_ticket_mtime(new_name)
 
     def delete_ticket(self, name):
         """Delete the given ticket and its childs.
@@ -424,6 +438,7 @@ class Repository:
             if tag not in ticket.tags:
                 ticket.tags.append(tag)
         self.write_tickets_file()
+        self.update_ticket_mtime(name)
 
     def remove_tags(self, name, tags):
         """Remove tags from the given ticket.
@@ -437,6 +452,7 @@ class Repository:
             if tag in ticket.tags:
                 ticket.tags.remove(tag)
         self.write_tickets_file()
+        self.update_ticket_mtime(name)
 
     def list_tickets(self, root=None, status=None, tags=None):
         """List tickets using filters.
