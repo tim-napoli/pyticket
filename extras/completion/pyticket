@@ -37,8 +37,8 @@ _pyticket() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    commands="create edit show list close reopen delete rename add-tag "
-    commands+=" remove-tag configure works-on release table"
+    commands="create edit show list close reopen delete rename add-tags "
+    commands+=" remove-tags configure works-on release table"
     if [ "$prev" == "edit" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))
     elif [ "$prev" == "delete" ]; then
@@ -53,9 +53,9 @@ _pyticket() {
         COMPREPLY=($(_pyticket_tickets_comp))
     elif [ "$prev" == "list" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))
-    elif [ "$prev" == "add-tag" ]; then
+    elif [ "$prev" == "add-tags" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))
-    elif [ "$prev" == "remove-tag" ]; then
+    elif [ "$prev" == "remove-tags" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))
     elif [ "$prev" == "create" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))

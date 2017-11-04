@@ -24,7 +24,8 @@ COMMANDS = [
         "create",
         "Create a new ticket",
         commands.create_ticket,
-        [option("no-edit", "don't edit the created ticket", False)]
+        [option("no-edit", "don't edit the created ticket", False),
+         option("tags", "initial ticket's tags", True)]
     ),
     command(
         "edit",
@@ -69,14 +70,14 @@ COMMANDS = [
                 True)]
     ),
     command(
-        "add-tag",
-        "Add a tag to the given ticket",
-        commands.add_tag
+        "add-tags",
+        "Add tags to the given ticket",
+        commands.add_tags
     ),
     command(
-        "remove-tag",
-        "Remove a tag from the given ticket",
-        commands.remove_tag
+        "remove-tags",
+        "Remove tags from the given ticket",
+        commands.remove_tags
     ),
     command(
         "works-on",

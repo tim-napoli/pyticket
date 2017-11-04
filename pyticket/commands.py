@@ -14,8 +14,9 @@ from pyticket.configuration import Configuration
 def create_ticket(options,
                   ticket_name: "The ticket name",
                   template: "The template to use" = None):
+    tags = options["tags"].split(",") if "tags" in options else []
     r = Repository(".")
-    r.create_ticket(ticket_name, "opened", [])
+    r.create_ticket(ticket_name, "opened", tags)
 
     if template:
         content = r.expand_template(template, {"ticket": ticket_name})
@@ -223,13 +224,13 @@ def table(options, ticket: "Show only this ticket tree" = None):
     print("-" * sum(sizes))
 
 
-def add_tag(options, ticket: "The ticket to modify",
-            tag: "The tag to add to the ticket"):
+def add_tags(options, ticket: "The ticket to modify",
+             tags: "The tags to add to the ticket"):
     r = Repository(".")
-    r.add_tags(ticket, [tag])
+    r.add_tags(ticket, tags.split(","))
 
 
-def remove_tag(options, ticket: "The ticket to modify",
-               tag: "The tag to remove from the ticket"):
+def remove_tags(options, ticket: "The ticket to modify",
+                tags: "The tag to remove from the ticket"):
     r = Repository(".")
-    r.remove_tags(ticket, [tag])
+    r.remove_tags(ticket, tags.split(","))
