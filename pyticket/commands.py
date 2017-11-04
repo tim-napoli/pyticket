@@ -67,7 +67,8 @@ def show_ticket(options, ticket_name: "The ticket name"):
 def list_tickets(options,
                  ticket_name: "List given ticket and its childs" = None):
     def print_ticket(working, ticket):
-        print("  {} {}".format("*" if working else " ", ticket.name))
+        spaces = "".join([" " for _ in ticket.name if _ == "."])
+        print("  {} {}{}".format("*" if working else " ", spaces, ticket.name))
 
     r = Repository(".")
 
