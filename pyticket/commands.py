@@ -204,7 +204,7 @@ def table(options, ticket: "Show only this ticket tree" = None):
 
     r = Repository(".")
 
-    table = [[t.name, t.status, None, t.tags]
+    table = [[t.name, t.status, t.mtime, t.tags]
              for t in r.list_tickets(ticket, status, tags)]
 
     table = sorted(table,
