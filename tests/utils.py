@@ -1,5 +1,6 @@
 """This module contains utility functions to write tests."""
 import os
+import shutil
 import tempfile
 
 
@@ -40,6 +41,10 @@ def read_file_content(path):
 
 def get_test_root_dir():
     if "PYTICKET_TEST_TMP_DIR" in os.environ:
-        return os.environ["PYTICKET_TEST_TMP_DIR"] + "/pyticket-test"
+        dirname = os.environ["PYTICKET_TEST_TMP_DIR"] + "/pyticket-test"
+        if os.path.isdir(dirname):
+            shutil.rmtree(dirname)
+        os.mkdir(dirname)
+        return dirname
     else:
         return tempfile.mkdtemp("pyticket")
