@@ -98,7 +98,12 @@ COMMANDS = [
          option("opened", "Show opened tickets", False),
          option("closed", "Show closed tickets", False),
          option("tags", "Filter using given tags", True)]
-    )
+    ),
+    command(
+        "install-git",
+        "Install pyticket callbacks in git repository",
+        commands.install_git
+    ),
 ]
 
 

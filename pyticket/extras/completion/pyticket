@@ -38,7 +38,7 @@ _pyticket() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     commands="create edit show list close reopen delete rename add-tags "
-    commands+=" remove-tags configure works-on release table"
+    commands+=" remove-tags configure works-on release table install-git"
     if [ "$prev" == "edit" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))
     elif [ "$prev" == "delete" ]; then
@@ -62,6 +62,8 @@ _pyticket() {
     elif [ "$prev" == "works-on" ]; then
         COMPREPLY=($(_pyticket_opened_comp))
     elif [ "$prev" == "release" ]; then
+        return 0
+    elif [ "$prev" == "install-git" ]; then
         return 0
     elif [ "$prev" == "table" ]; then
         COMPREPLY=($(_pyticket_tickets_comp))

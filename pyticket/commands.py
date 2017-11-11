@@ -1,12 +1,15 @@
 import subprocess
 import sys
 import os
+import shutil
 import time
 import re
 
 import vmd
 
+from pyticket import PyticketException, get_extra
 from pyticket import utils as utils
+from pyticket import git
 from pyticket.repository import Repository
 from pyticket.configuration import Configuration
 
@@ -256,3 +259,15 @@ def remove_tags(options, ticket: "The ticket to modify",
                 tags: "The tag to remove from the ticket"):
     r = Repository(".")
     r.remove_tags(ticket, tags.split(","))
+
+
+def install_git(options):
+    def install_hook(name):
+        print("Installing '.git/hooks/{}'...".format(name))
+        shutil.copy(get_extra("git-hooks/{}".format(name)), ".git/hooks/")
+
+    if not git.Git.is_git_repository("."):
+        raise PyticketException(
+            "install-git needs to be called from a git repository."
+        )
+    install_hook("prepare-commit-msg")
