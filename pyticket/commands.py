@@ -2,10 +2,10 @@ import subprocess
 import sys
 import os
 import time
+import re
 
 import vmd
 
-from pyticket import PyticketException
 from pyticket import utils as utils
 from pyticket.repository import Repository
 from pyticket.configuration import Configuration
@@ -43,14 +43,35 @@ def edit_ticket(argv, ticket_name: "The ticket name"):
 
 
 def show_ticket(options, ticket_name: "The ticket name"):
+    def add_indent(content, level):
+        if level == 0:
+            return content
+        content = add_indent(content, level - 1)
+        return re.sub("^#", "\g<0>#", content, flags=re.MULTILINE)
+
+    def get_ticket_content_rec(repository, ticket_name, depth):
+        content = ""
+        if repository.has_ticket_content(ticket_name):
+            content = repository.read_ticket_content(ticket_name)
+        else:
+            # If there is no content, we generate a really simple one.
+            content = "# {}".format(ticket_name)
+        content = add_indent(content, depth)
+
+        # Append childs content
+        childs = repository.get_ticket_childs(ticket_name)
+        for child in childs:
+            child_content = get_ticket_content_rec(
+                repository, child.name, depth + 1
+            )
+            content = content + "\n" + child_content
+        return content
+
     class parser_args:
         tab_spaces = 4
     r = Repository(".")
 
-    if not r.has_ticket_content(ticket_name):
-        raise PyticketException("'{}' has no content".format(ticket_name))
-
-    ticket_content = r.read_ticket_content(ticket_name)
+    ticket_content = get_ticket_content_rec(r, ticket_name, 0)
 
     parser = vmd.build_parser(parser_args)
     config = vmd.load_config()

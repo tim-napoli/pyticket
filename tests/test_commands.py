@@ -38,11 +38,6 @@ class CommandsTest(unittest.TestCase):
         repo_mock.assert_called_with(".")
         repo_mock().read_ticket_content.assert_called_with("blectre")
 
-    @mock.patch('pyticket.commands.vmd')
-    def test_show_ticket_no_content(self, vmd_mock, repo_mock):
-        repo_mock().has_ticket_content.return_value = False
-        self.assertRaises(PyticketException, show_ticket, {}, "blectre")
-
     def test_list_tickets(self, repo_mock):
         list_tickets({"opened": None, "tags": "x,y"}, "blectre")
         repo_mock().list_tickets.assert_called_with(
