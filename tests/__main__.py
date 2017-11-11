@@ -4,7 +4,7 @@ import os
 
 from tests import (
     test_configuration, test_generators, test_migrations, test_repository,
-    test_ticket, test_commands
+    test_ticket, test_commands, test_git
 )
 
 
@@ -18,6 +18,7 @@ def suite():
     suite.addTests(loader.loadTestsFromModule(test_ticket))
     suite.addTests(loader.loadTestsFromModule(test_ticket))
     suite.addTests(loader.loadTestsFromModule(test_commands))
+    suite.addTests(loader.loadTestsFromModule(test_git))
     return suite
 
 
