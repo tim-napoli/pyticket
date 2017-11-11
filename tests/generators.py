@@ -13,7 +13,7 @@ def gen_ticket_name(can_be_child=False):
     charset = (MetaTicket.VALID_NAME_CHARSET if can_be_child
                else MetaTicket.VALID_NAME_CHARSET.replace(".", ""))
     name = "".join([random.choice(charset) for _ in range(count)])
-    if name == "." or name == "..":
+    if name == "." or name == ".." or name[0] == "-":
         return gen_ticket_name()
     return name
 

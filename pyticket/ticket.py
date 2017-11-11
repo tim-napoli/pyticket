@@ -100,6 +100,8 @@ class MetaTicket:
     def is_valid_name(name):
         if not name:
             return False
+        if name[0] == '-':
+            return False
         for letter in name:
             if letter not in MetaTicket.VALID_NAME_CHARSET:
                 return False
