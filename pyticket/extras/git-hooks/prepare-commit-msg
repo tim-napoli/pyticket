@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "$2"
+
+current_message=`cat $1`
+current_ticket=`cat .pyticket/working`
+if    [[ ! -z $current_ticket  ]] && [[ ! $2 == "commit" ]]; then
+    echo -e "$current_message\npyticket-ref: $current_ticket" > $1
+else
+    echo -e "$current_message" > $1
+fi

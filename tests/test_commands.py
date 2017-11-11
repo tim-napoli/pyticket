@@ -1,7 +1,6 @@
 import unittest
 from unittest import mock
 
-from pyticket import PyticketException
 from pyticket.commands import (
     create_ticket, edit_ticket, show_ticket, list_tickets, close_ticket,
     reopen_ticket, delete_ticket, rename_ticket, works_on, release, configure,
