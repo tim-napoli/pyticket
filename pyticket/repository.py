@@ -1,5 +1,6 @@
 import os
 import os.path
+import shutil
 import time
 from string import Template
 
@@ -378,10 +379,19 @@ class Repository:
                                                             new_name)
             )
 
+        has_content = self.has_ticket_content(name)
+        if has_content:
+            previous_content_path = self.get_ticket_content_path(name)
+
         # Rename the ticket
         ticket = self.get_ticket(name)
         ticket.name = new_name
         self.tickets[new_name] = self.tickets.pop(name)
+
+        # Rename the content
+        if has_content:
+            new_content_path = self.get_ticket_content_path(new_name)
+            shutil.move(previous_content_path, new_content_path)
 
         # Rename childs
         childs = self.get_ticket_childs(name)

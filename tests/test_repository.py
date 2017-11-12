@@ -353,11 +353,14 @@ class RepositoryTest(unittest.TestCase):
 
         # Create a repository with some parent tickets.
         r = Repository(self.root, create=True)
-        tickets, parents = RepositoryTest.generate_tickets(r, 1000, 0.3)
+        tickets, parents = RepositoryTest.generate_tickets(r, 100, 0.3)
 
         # Renaming some tickets
         new_names = {}
         to_rename = random.sample(tickets, random.randrange(len(tickets)))
+        for ticket in to_rename:
+            r.write_ticket_content(ticket, "blablabla")
+
         while to_rename:
             ticket = to_rename.pop(0)
             if new_names and random.random() < 0.2:
@@ -384,6 +387,11 @@ class RepositoryTest(unittest.TestCase):
             self.assertFalse(r.has_ticket(prev_name))
             # Check we have new name
             self.assertTrue(r.has_ticket(new_name))
+            # Check content has been renamed
+            self.assertRaises(
+                PyticketException, r.has_ticket_content, prev_name
+            )
+            self.assertTrue(r.has_ticket_content(new_name))
             # If the tickets had childs, check childs are correctly renamed
             # too
             if prev_name not in parents:
