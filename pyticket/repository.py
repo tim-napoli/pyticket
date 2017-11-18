@@ -371,6 +371,10 @@ class Repository:
             raise PyticketException(
                 "'{}' is not a valid ticket name".format(new_name)
             )
+        if self.has_ticket(new_name):
+            raise PyticketException(
+                "ticket '{}' already exists".format(new_name)
+            )
         parent_name = utils.get_ticket_parent_name(new_name)
         if parent_name and not self.has_ticket(parent_name):
             raise PyticketException(

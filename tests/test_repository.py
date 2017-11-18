@@ -419,6 +419,14 @@ class RepositoryTest(unittest.TestCase):
             PyticketException, r.rename_ticket, "blectre", "parent.blectre"
         )
 
+    def test_rename_ticket_already_exist(self):
+        r = Repository(self.root, create=True)
+        r.create_ticket("blectre", "opened", [])
+        r.create_ticket("blectre-2", "opened", [])
+        self.assertRaises(
+            PyticketException, r.rename_ticket, "blectre-2", "blectre"
+        )
+
     def test_delete_ticket(self):
         def removed_ticket_childs(tickets, to_delete, name):
             remaining = []
