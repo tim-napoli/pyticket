@@ -1,6 +1,6 @@
-import string
 import inspect
 import re
+import string
 
 from pyticket import PyticketException
 
@@ -28,14 +28,50 @@ class MetaTicket:
     def __eq__(self, other):
         return (self.name == other.name and
                 self.status == other.status and
-                self.tags == other.tags)
+                self.tags == other.tags and
+                self.mtime == other.mtime)
 
     def __hash__(self):
         return hash(self.name)
 
+    def to_json(self):
+        return {
+            "name": self.name,
+            "status": self.status,
+            "tags": self.tags,
+            "mtime": self.mtime
+        }
+
     @staticmethod
-    def parse(line):
-        """Parse a pyticket line."""
+    def from_json(json_data):
+        return MetaTicket(
+            json_data["name"],
+            json_data["status"],
+            json_data["tags"],
+            json_data["mtime"]
+        )
+
+    @staticmethod
+    def is_valid_name(name):
+        if not name:
+            return False
+        if name[0] == '-':
+            return False
+        for letter in name:
+            if letter not in MetaTicket.VALID_NAME_CHARSET:
+                return False
+        return True
+
+    @staticmethod
+    def is_valid_tag_name(name):
+        return MetaTicket.is_valid_name(name)
+
+    @staticmethod
+    def is_valid_status(status):
+        return status in MetaTicket.VALID_STATUS
+
+    @staticmethod
+    def parse_legacy(line):
         s = inspect.signature(MetaTicket.__init__)
         nargs = len(s.parameters) - 1
         split = line.split(" ")
@@ -95,22 +131,3 @@ class MetaTicket:
                 )
 
         return MetaTicket(name, status, tags, mtime)
-
-    @staticmethod
-    def is_valid_name(name):
-        if not name:
-            return False
-        if name[0] == '-':
-            return False
-        for letter in name:
-            if letter not in MetaTicket.VALID_NAME_CHARSET:
-                return False
-        return True
-
-    @staticmethod
-    def is_valid_tag_name(name):
-        return MetaTicket.is_valid_name(name)
-
-    @staticmethod
-    def is_valid_status(status):
-        return status in MetaTicket.VALID_STATUS

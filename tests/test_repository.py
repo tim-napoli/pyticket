@@ -88,9 +88,7 @@ class RepositoryTest(unittest.TestCase):
             tags = generators.gen_tags()
             created = random.choice([True, False])
 
-            r.create_ticket(name, status, tags, created)
-
-            meta = MetaTicket(name, status, tags)
+            meta = r.create_ticket(name, status, tags, created)
             tickets.append((meta, created))
 
         # We reload the repository to check if the tickets file has been

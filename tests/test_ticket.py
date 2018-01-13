@@ -33,7 +33,7 @@ class MetaTicketTest(unittest.TestCase):
         tags = generators.gen_tags()
         mtime = generators.gen_time()
         line = "{} {} ({}) {}".format(name, status, ",".join(tags), mtime)
-        meta_ticket = MetaTicket.parse(line)
+        meta_ticket = MetaTicket.parse_legacy(line)
         self.assertEqual(meta_ticket.name, name)
         self.assertEqual(meta_ticket.status, status)
         self.assertEqual(meta_ticket.tags, tags)
@@ -41,32 +41,32 @@ class MetaTicketTest(unittest.TestCase):
 
     def test_parse_invalid_count(self):
         line = "invalid_name opened (x,y,z) 32"
-        self.assertRaises(PyticketException, MetaTicket.parse, line)
+        self.assertRaises(PyticketException, MetaTicket.parse_legacy, line)
 
     @repeat(1000)
     def test_parse_invalid_name(self):
         line = "inval{}id_name opened (x,y,z)".format(
             MetaTicketTest.INVALID_CHARACTERS
         )
-        self.assertRaises(PyticketException, MetaTicket.parse, line)
+        self.assertRaises(PyticketException, MetaTicket.parse_legacy, line)
 
     def test_parse_invalid_status(self):
         line = "a-ticket invalid-status (x,y,z)"
-        self.assertRaises(PyticketException, MetaTicket.parse, line)
+        self.assertRaises(PyticketException, MetaTicket.parse_legacy, line)
 
     @repeat(1000)
     def test_parse_invalid_tags(self):
         line = "a-ticket opened (x,{},z)".format(
             MetaTicketTest.INVALID_CHARACTERS
         )
-        self.assertRaises(PyticketException, MetaTicket.parse, line)
+        self.assertRaises(PyticketException, MetaTicket.parse_legacy, line)
 
     @repeat(1000)
     def test_parse_invalid_mtime(self):
         line = "a-ticket opened (x,y,z) blectre".format(
             MetaTicketTest.INVALID_CHARACTERS
         )
-        self.assertRaises(PyticketException, MetaTicket.parse, line)
+        self.assertRaises(PyticketException, MetaTicket.parse_legacy, line)
 
 
 if __name__ == "__main__":

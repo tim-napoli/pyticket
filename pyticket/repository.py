@@ -1,3 +1,4 @@
+import json
 import os
 import os.path
 import shutil
@@ -66,21 +67,17 @@ class Repository:
         :param path: the repository's tickets file path.
         :return: the list of every ```MetaTicket``` of the repository.
         """
-        meta_tickets = []
         with open(path, "r") as f:
-            content = f.read()
-            lines = content.splitlines()
-            for line in lines:
-                meta_tickets.append(MetaTicket.parse(line))
-        return meta_tickets
+            json_data = json.loads(f.read())
+            return [MetaTicket.from_json(node) for node in json_data]
 
     def write_tickets_file(self):
         """Replace the content of the tickets file using the current tickets
         list.
         """
         with open(self.repository + "/tickets", "w+") as f:
-            for name, ticket in self.tickets.items():
-                f.write(ticket.to_string() + "\n")
+            json_data = [t.to_json() for t in self.tickets.values()]
+            f.write(json.dumps(json_data))
 
     def init(self):
         """Initialize a new pyticket repository in the "root" directory."""
@@ -234,6 +231,7 @@ class Repository:
         :param status: the ticket status.
         :param tags: the ticket tags.
         :param create: if ```True```, create the given ticket content file.
+        :return: The created MetaTicket.
         :raises PyticketException: the ticket cannot be created for one of the
                                    following reasons:
                                    - a ticket already has the given name ;
@@ -284,6 +282,8 @@ class Repository:
 
         if create:
             open(self.get_ticket_content_path(name), "w+").close()
+
+        return meta_ticket
 
     def write_ticket_content(self, name, content):
         """Write the ticket content file for the given ticket.

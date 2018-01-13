@@ -1,4 +1,5 @@
 """Tests migrations."""
+import json
 import unittest
 import os
 import os.path
@@ -79,12 +80,13 @@ class MigrationsTest(unittest.TestCase):
             lines = f.read().splitlines()
             self.assertEqual(len(lines), len(tickets))
             for line in lines:
-                meta_ticket = MetaTicket.parse(line)
+                meta_ticket = MetaTicket.parse_legacy(line)
                 self.assertTrue(meta_ticket in tickets)
                 self.assertTrue(os.path.isfile(
                     self.directory + "/contents/" + meta_ticket.name
                 ))
 
+    @repeat(10)
     def test_mtime_migration(self):
         os.mkdir(self.directory + "/contents")
 
@@ -93,6 +95,8 @@ class MigrationsTest(unittest.TestCase):
         with open(self.directory + "/tickets", "w+") as f:
             for i in range(0, 100):
                 name = generators.gen_ticket_name()
+                while name in tickets:
+                    name = generators.gen_ticket_name()
                 status = generators.gen_status()
                 tags = generators.gen_tags()
                 mtime = None
@@ -113,12 +117,42 @@ class MigrationsTest(unittest.TestCase):
             lines = f.read().splitlines()
             self.assertEqual(len(lines), len(tickets))
             for line in lines:
-                ticket = MetaTicket.parse(line)
+                ticket = MetaTicket.parse_legacy(line)
             self.assertTrue(ticket.name in tickets)
             self.assertEqual(ticket.status, tickets[ticket.name][0])
             self.assertEqual(ticket.tags, tickets[ticket.name][1])
             if tickets[ticket.name][2]:
                 self.assertEqual(ticket.mtime, tickets[ticket.name][2])
+
+    @repeat(10)
+    def test_json_migration(self):
+        # Generate some legacy tickets
+        legacy_tickets = []
+        for i in range(0, 100):
+            name = generators.gen_ticket_name()
+            status = generators.gen_status()
+            tags = generators.gen_tags()
+            mtime = generators.gen_time()
+            legacy_tickets.append(MetaTicket(name, status, tags, mtime))
+
+        # Writing tickets file
+        with open(self.directory + "/tickets", "w+") as f:
+            for t in legacy_tickets:
+                f.write("{} {} ({}) {}\n".format(
+                    t.name, t.status, ",".join(t.tags), t.mtime
+                ))
+
+        # Applying migration
+        migrations.tickets_json_migration(self.directory)
+
+        # Test everything is OK
+        with open(self.directory + "/tickets", "r") as f:
+            json_data = json.loads(f.read())
+            self.assertEqual(len(json_data), len(legacy_tickets))
+            for json_ticket_data in json_data:
+                meta_ticket = MetaTicket.from_json(json_ticket_data)
+                legacy_ticket = [t for t in legacy_tickets if t == meta_ticket]
+                self.assertTrue(legacy_ticket)
 
 
 if __name__ == "__main__":

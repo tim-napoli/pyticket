@@ -1,5 +1,6 @@
-import shutil
+import json
 import os.path
+import shutil
 import time
 
 from pyticket.ticket import MetaTicket
@@ -50,7 +51,7 @@ def tickets_meta_files_migration(directory):
 
 
 def tickets_mtime_migration(directory):
-    print("Applying mtime migration")
+    print("Applying mtime migration...")
     lines = []
     with open(directory + "/tickets", "r") as f:
         lines = f.read().splitlines()
@@ -68,10 +69,22 @@ def tickets_mtime_migration(directory):
             f.write("{}\n".format(line))
 
 
+def tickets_json_migration(directory):
+    print("Applying json migration...")
+    tickets = []
+    with open("{}/tickets".format(directory), "r") as f:
+        for line in f.readlines():
+            tickets.append(MetaTicket.parse_legacy(line))
+    with open("{}/tickets".format(directory), "w+") as f:
+        json_data = [t.to_json() for t in tickets]
+        f.write(json.dumps(json_data))
+
+
 MIGRATIONS = [
     working_ticket_migration,
     tickets_meta_files_migration,
     tickets_mtime_migration,
+    tickets_json_migration
 ]
 
 
