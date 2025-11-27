@@ -153,6 +153,15 @@ def works_on(options, name: "The ticket to work on"):
     r.set_working_ticket(name)
 
 
+def current(options):
+    r = Repository(".")
+    working = r.get_working_ticket()
+    if working is None:
+        print("No working ticket")
+    else:
+        print(working.name)
+
+
 def release(options):
     r = Repository(".")
     r.set_working_ticket(None)

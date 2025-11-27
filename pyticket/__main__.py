@@ -85,6 +85,11 @@ COMMANDS = [
         commands.works_on
     ),
     command(
+        "current",
+        "Shows the current working ticket",
+        commands.current
+    ),
+    command(
         "release",
         "Release the working ticket",
         commands.release
