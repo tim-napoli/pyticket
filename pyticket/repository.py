@@ -103,7 +103,9 @@ class Repository:
         open("{}/working".format(self.repository), "w+").close()
 
         # Create tickets meta file.
-        open("{}/tickets".format(self.repository), "w+").close()
+        ticketsFile = open("{}/tickets".format(self.repository), "w+")
+        ticketsFile.write("{}")
+        ticketsFile.close()
 
         # Create default configuration file if needed.
         if not os.path.isdir(utils.get_home_path()):
